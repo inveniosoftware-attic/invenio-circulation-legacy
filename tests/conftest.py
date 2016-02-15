@@ -27,15 +27,32 @@
 
 from __future__ import absolute_import, print_function
 
+import shutil
+import tempfile
+
 import pytest
 from flask import Flask
+from flask_cli import FlaskCLI
+from invenio_records_rest.utils import PIDConverter
+
+from invenio_circulation import InvenioCirculation
 
 
-@pytest.fixture()
-def app():
+@pytest.yield_fixture()
+def app(request):
     """Flask application fixture."""
-    app = Flask('testapp')
-    app.config.update(
-        TESTING=True
+    instance_path = tempfile.mkdtemp()
+    app_ = Flask(__name__, instance_path=instance_path)
+    app_.config.update(
+        TESTING=True,
     )
-    return app
+
+    app_.url_map.converters['pid'] = PIDConverter
+
+    FlaskCLI(app_)
+    InvenioCirculation(app_)
+
+    with app_.app_context():
+        yield app_
+
+    shutil.rmtree(instance_path)

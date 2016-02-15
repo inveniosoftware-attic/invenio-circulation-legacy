@@ -26,6 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
+from . import config
+
 
 class InvenioCirculation(object):
     """Invenio-Circulation extension."""
@@ -46,3 +48,7 @@ class InvenioCirculation(object):
             'CIRCULATION_BASE_TEMPLATE',
             app.config.get('BASE_TEMPLATE',
                            'invenio_circulation/base.html'))
+
+        for k in dir(config):
+            if k.startswith('CIRCULATION_'):
+                app.config.setdefault(k, getattr(config, k))

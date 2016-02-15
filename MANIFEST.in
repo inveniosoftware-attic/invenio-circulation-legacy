@@ -22,7 +22,6 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-
 include *.rst
 include *.sh
 include *.txt
@@ -38,5 +37,8 @@ recursive-include docs *.rst
 recursive-include docs Makefile
 recursive-include examples *.py
 recursive-include invenio_circulation *.html
+recursive-include invenio_circulation *.json
+recursive-include invenio_circulation *.msg
 recursive-include invenio_circulation *.po *.pot *.mo
+recursive-include invenio_circulation *.py
 recursive-include tests *.py

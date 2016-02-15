@@ -22,27 +22,14 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Invenio module for the circulation of bibliographic items."""
-
-# TODO: This is an example file. Remove it if you do not need it, including
-# the templates and static folders as well as the test case.
+"""Helper proxy to the state object."""
 
 from __future__ import absolute_import, print_function
 
-from flask import Blueprint, render_template
-from flask_babelex import gettext as _
+from flask import current_app
+from werkzeug.local import LocalProxy
 
-blueprint = Blueprint(
-    'invenio_circulation',
-    __name__,
-    template_folder='templates',
-    static_folder='static',
+current_circulation = LocalProxy(
+    lambda: current_app.extensions['invenio-circulation']
 )
-
-
-@blueprint.route("/")
-def index():
-    """Basic view."""
-    return render_template(
-        "invenio_circulation/index.html",
-        module_name=_('Invenio-Circulation'))
+"""Helper proxy to access state object."""

@@ -27,11 +27,13 @@
 
 from __future__ import absolute_import, print_function
 
+import pytest
 from flask import Flask
-from flask_babelex import Babel
+from flask_cli import FlaskCLI
+from invenio_records_rest.utils import PIDConverter
 
 from invenio_circulation import InvenioCirculation
-from invenio_circulation.views import blueprint
+from invenio_circulation.proxies import current_circulation
 
 
 def test_version():
@@ -43,22 +45,21 @@ def test_version():
 def test_init():
     """Test extension initialization."""
     app = Flask('testapp')
+    FlaskCLI(app)
+    app.url_map.converters['pid'] = PIDConverter
     ext = InvenioCirculation(app)
     assert 'invenio-circulation' in app.extensions
 
     app = Flask('testapp')
+    FlaskCLI(app)
+    app.url_map.converters['pid'] = PIDConverter
+
     ext = InvenioCirculation()
     assert 'invenio-circulation' not in app.extensions
     ext.init_app(app)
     assert 'invenio-circulation' in app.extensions
 
-
-def test_view(app):
-    """Test view."""
-    Babel(app)
-    InvenioCirculation(app)
-    app.register_blueprint(blueprint)
-    with app.test_client() as client:
-        res = client.get('/')
-        assert res.status_code == 200
-        assert 'Welcome to Invenio-Circulation' in str(res.data)
+    # check that current_circulation resolves correctly
+    with app.app_context():
+        assert (app.extensions['invenio-circulation'] ==
+                current_circulation._get_current_object())
