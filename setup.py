@@ -62,6 +62,7 @@ setup_requires = [
 install_requires = [
     'Flask-BabelEx>=0.9.2',
     'invenio-db>=1.0.0a9',
+    'invenio-pidstore>=1.0.0a7',
     'invenio-records-rest>=1.0.0a15',
 ]
 
@@ -93,6 +94,11 @@ setup(
         ],
         'invenio_i18n.translations': [
             'messages = invenio_circulation',
+        ],
+        'invenio_pidstore.minters': [
+            '{0} = invenio_circulation.minters:{0}_minter'.format(x)
+            for x in ['circulation_item', 'circulation_location',
+                      'circulation_loan_cycle']
         ],
     },
     extras_require=extras_require,

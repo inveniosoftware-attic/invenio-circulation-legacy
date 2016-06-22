@@ -33,7 +33,10 @@ import tempfile
 import pytest
 from flask import Flask
 from flask_cli import FlaskCLI
+from invenio_db import db as db_
+from invenio_db import InvenioDB
 from invenio_records_rest.utils import PIDConverter
+from sqlalchemy_utils.functions import create_database, database_exists
 
 from invenio_circulation import InvenioCirculation
 
@@ -50,9 +53,22 @@ def app(request):
     app_.url_map.converters['pid'] = PIDConverter
 
     FlaskCLI(app_)
+    InvenioDB(app_)
     InvenioCirculation(app_)
 
     with app_.app_context():
         yield app_
 
     shutil.rmtree(instance_path)
+
+
+@pytest.yield_fixture()
+def db(app):
+    """Database fixture."""
+    if not database_exists(str(db_.engine.url)):
+        create_database(str(db_.engine.url))
+
+    db_.create_all()
+    yield db_
+    db_.session.remove()
+    db_.drop_all()
