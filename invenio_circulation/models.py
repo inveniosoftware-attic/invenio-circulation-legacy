@@ -37,5 +37,6 @@ class CirculationItemIdentifier(RecordIdentifier):
     __mapper_args__ = {'concrete': True}
 
     recid = db.Column(
-        db.BigInteger().with_variant(db.Integer, "sqlite"),
-        primary_key=True, autoincrement=True)
+        db.BigInteger().with_variant(db.Integer, 'sqlite'),
+        primary_key=True, autoincrement=True,
+    )

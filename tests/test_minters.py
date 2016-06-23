@@ -33,7 +33,7 @@ from invenio_circulation.minters import circulation_item_minter
 
 
 def test_item_minter(db):
-    data1 = {'record': {'control_number': '1'}}
+    data1 = {'foo': 'bar'}
     record_uuid1 = uuid.uuid4()
     pid1 = circulation_item_minter(record_uuid1, data1)
 
@@ -42,7 +42,7 @@ def test_item_minter(db):
     with pytest.raises(AssertionError):
         circulation_item_minter(uuid.uuid4(), data1)
 
-    data2 = {'record': {'control_number': '1'}}
+    data2 = {'foo': 'bar'}
     record_uuid2 = uuid.uuid4()
     pid2 = circulation_item_minter(record_uuid2, data2)
 
