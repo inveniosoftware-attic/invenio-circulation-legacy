@@ -26,12 +26,22 @@
 
 from __future__ import absolute_import, print_function
 
-from .providers import CirculationItemProvider
+from .providers import CirculationItemProvider, CirculationLocationProvider
+
+
+def circulation_location_minter(record_uuid, data):
+    """Mint a circulation item identifier."""
+    assert 'location' in data
+    provider = CirculationLocationProvider.create(
+        object_type='rec',
+        object_uuid=record_uuid,
+        location=data['location'])
+    return provider.pid
 
 
 def circulation_item_minter(record_uuid, data):
     """Mint a circulation item identifier."""
-    assert 'control_number' not in data and 'uuid' not in data
+    assert 'control_number' not in data
     provider = CirculationItemProvider.create(
         object_type='rec', object_uuid=record_uuid)
     data['control_number'] = provider.pid.pid_value

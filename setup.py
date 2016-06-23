@@ -64,6 +64,7 @@ install_requires = [
     'invenio-db>=1.0.0a9',
     'invenio-pidstore>=1.0.0a7',
     'invenio-records-rest>=1.0.0a15',
+    'python-slugify>=1.2.0',
 ]
 
 packages = find_packages()
@@ -97,8 +98,7 @@ setup(
         ],
         'invenio_pidstore.minters': [
             '{0} = invenio_circulation.minters:{0}_minter'.format(x)
-            for x in ['circulation_item', 'circulation_location',
-                      'circulation_loan_cycle']
+            for x in ['circulation_item', 'circulation_location']
         ],
     },
     extras_require=extras_require,

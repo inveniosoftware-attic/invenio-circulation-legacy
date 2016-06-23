@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 
 from invenio_pidstore.models import PIDStatus
 from invenio_pidstore.providers.base import BaseProvider
+from slugify import slugify
 
 from .models import CirculationItemIdentifier
 
@@ -40,6 +41,7 @@ class CirculationItemProvider(BaseProvider):
 
     pid_provider = None
     """Provider name.
+
     The provider name is not recorded in the PID since the provider does not
     provide any additional features besides creation of circulation ids.
     """
@@ -56,4 +58,30 @@ class CirculationItemProvider(BaseProvider):
         if object_type and object_uuid:
             kwargs['status'] = PIDStatus.REGISTERED
         return super(CirculationItemProvider, cls).create(
+            object_type=object_type, object_uuid=object_uuid, **kwargs)
+
+
+class CirculationLocationProvider(BaseProvider):
+    """Circulation identifier provider."""
+
+    pid_type = 'crcloc'
+    """Type of persistent identifier."""
+
+    pid_provider = None
+    """Provider name.
+
+    The provider name is not recorded in the PID since the provider does not
+    provide any additional features besides creation of circulation ids.
+    """
+
+    default_status = PIDStatus.REGISTERED
+    """Circulation IDs are by default registered immediately."""
+
+    @classmethod
+    def create(cls, object_type=None, object_uuid=None, **kwargs):
+        """Create a new circulation identifier."""
+        if 'pid_value' not in kwargs:
+            kwargs['pid_value'] = slugify(kwargs.pop('location'))
+        kwargs.setdefault('status', cls.default_status)
+        return super(CirculationLocationProvider, cls).create(
             object_type=object_type, object_uuid=object_uuid, **kwargs)

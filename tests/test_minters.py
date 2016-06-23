@@ -28,8 +28,11 @@
 import uuid
 
 import pytest
+from invenio_pidstore.errors import PIDAlreadyExists
+from slugify import slugify
 
-from invenio_circulation.minters import circulation_item_minter
+from invenio_circulation.minters import circulation_item_minter, \
+    circulation_location_minter
 
 
 def test_item_minter(db):
@@ -49,3 +52,14 @@ def test_item_minter(db):
     assert data2['control_number'] == pid2.pid_value
 
     assert int(pid1.pid_value) == int(pid2.pid_value) - 1
+
+
+def test_location_minter(db):
+    record_uuid = uuid.uuid4()
+    data = {'location': 'Central Library'}
+    pid = circulation_location_minter(record_uuid, data)
+
+    assert pid.pid_value == slugify(data['location'])
+
+    with pytest.raises(PIDAlreadyExists):
+        circulation_location_minter(uuid.uuid4(), data)
