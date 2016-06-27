@@ -40,3 +40,11 @@ class CirculationItemIdentifier(RecordIdentifier):
         db.BigInteger().with_variant(db.Integer, 'sqlite'),
         primary_key=True, autoincrement=True,
     )
+
+
+class ItemStatus(object):
+    """Class holding all availabe circulation item statuses."""
+
+    ON_SHELF = 'on_shelf'
+    ON_LOAN = 'on_loan'
+    MISSING = 'missing'

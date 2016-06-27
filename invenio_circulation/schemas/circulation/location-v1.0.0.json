@@ -1,0 +1,19 @@
+{
+   "type":"object",
+   "title":"Location",
+   "properties":{
+      "sublocation_or_collection":{
+         "type":"string"
+      },
+      "address":{
+         "type":"string"
+      },
+      "nonpublic_notes":{
+         "type":"string",
+         "format":"textarea",
+         "options":{
+            "expand_height":true
+         }
+      }
+   }
+}

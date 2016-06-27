@@ -17,11 +17,4 @@
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-"""Invenio circulation configuration file."""
-
-
-CIRCULATION_EMAIL_SENDER = None
-CIRCULATION_LOAN_PERIOD = 28
-
-CIRCULATION_LOCATION_SCHEMA = 'circulation/location-v1.0.0.json'
-CIRCULATION_ITEM_SCHEMA = 'circulation/item-v1.0.0.json'
+"""invenio-circulation api schemas."""

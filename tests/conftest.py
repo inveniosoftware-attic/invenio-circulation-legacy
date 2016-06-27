@@ -35,6 +35,8 @@ from flask import Flask
 from flask_cli import FlaskCLI
 from invenio_db import db as db_
 from invenio_db import InvenioDB
+from invenio_jsonschemas import InvenioJSONSchemas
+from invenio_records import InvenioRecords
 from invenio_records_rest.utils import PIDConverter
 from sqlalchemy_utils.functions import create_database, database_exists
 
@@ -54,6 +56,8 @@ def app(request):
 
     FlaskCLI(app_)
     InvenioDB(app_)
+    InvenioJSONSchemas(app_)
+    InvenioRecords(app_)
     InvenioCirculation(app_)
 
     with app_.app_context():

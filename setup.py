@@ -62,7 +62,9 @@ setup_requires = [
 install_requires = [
     'Flask-BabelEx>=0.9.2',
     'invenio-db>=1.0.0a9',
+    'invenio-jsonschemas>=1.0.0a3',
     'invenio-pidstore>=1.0.0a7',
+    'invenio-records>=1.0.0a15',
     'invenio-records-rest>=1.0.0a15',
     'python-slugify>=1.2.0',
 ]
@@ -99,6 +101,9 @@ setup(
         'invenio_pidstore.minters': [
             '{0} = invenio_circulation.minters:{0}_minter'.format(x)
             for x in ['circulation_item', 'circulation_location']
+        ],
+        'invenio_jsonschemas.schemas': [
+            'circulation = invenio_circulation.schemas',
         ],
     },
     extras_require=extras_require,
