@@ -27,4 +27,4 @@ Authors
 
 Invenio module for the circulation of bibliographic items.
 
-- CERN <info@invenio-software.org>
+- CERN <info@inveniosoftware.org>
