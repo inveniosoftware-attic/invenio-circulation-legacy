@@ -102,7 +102,7 @@ class Item(Record):
         """
         self['_circulation']['status'] = ItemStatus.ON_LOAN
 
-        holding = {'id_': uuid.uuid4()}
+        holding = {'_id': str(uuid.uuid4())}
         self['_circulation']['holdings'].insert(0, holding)
 
     @check_status(statuses=[ItemStatus.ON_LOAN,
@@ -120,7 +120,7 @@ class Item(Record):
                          be put on a waitlist.
         :param delivery: 'pickup' or 'mail'
         """
-        holding = {'id_': uuid.uuid4()}
+        holding = {'_id': str(uuid.uuid4())}
         self['_circulation']['holdings'].append(holding)
 
     @check_status(statuses=[ItemStatus.ON_LOAN])
@@ -144,7 +144,7 @@ class Item(Record):
         self['_circulation']['status'] = ItemStatus.MISSING
 
         for holding in self['_circulation']['holdings']:
-            self.cancel_hold(holding['id_'])
+            self.cancel_hold(holding['_id'])
 
     @check_status(statuses=[ItemStatus.MISSING])
     def return_missing_item(self):
@@ -161,7 +161,7 @@ class Item(Record):
         This action updates the waitlist.
         """
         for i, holding in enumerate(self['_circulation']['holdings'][:]):
-            if holding['id_'] == id_:
+            if holding['_id'] == id_:
                 del self['_circulation']['holdings'][i]
                 return
         else:

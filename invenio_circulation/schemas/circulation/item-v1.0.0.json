@@ -32,7 +32,7 @@
             "holdings":{
                "type":"array",
                "items":{
-                  "$ref":"circulation/loan_cycle.json"
+                  "$ref":"loan_cycle-v1.0.0.json"
                }
             }
          }

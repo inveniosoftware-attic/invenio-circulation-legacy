@@ -109,7 +109,7 @@ def test_cancel_hold(app, db):
     # Loan the item
     item.request_item()
 
-    item.cancel_hold(item['_circulation']['holdings'][0]['id_'])
+    item.cancel_hold(item['_circulation']['holdings'][0]['_id'])
 
     assert len(item['_circulation']['holdings']) == 0
 

@@ -35,12 +35,55 @@ Run example development server:
 
 from __future__ import absolute_import, print_function
 
+import os
+
 from flask import Flask
 from flask_babelex import Babel
+from flask_breadcrumbs import Breadcrumbs
+from flask_cli import FlaskCLI
+from flask_menu import Menu
+from invenio_accounts import InvenioAccounts
+from invenio_db import InvenioDB
+from invenio_jsonschemas import InvenioJSONSchemas
+from invenio_oauth2server import InvenioOAuth2Server
+from invenio_oauth2server.views import server_blueprint, settings_blueprint
+from invenio_pidstore import InvenioPIDStore
+from invenio_records import InvenioRecords
+from invenio_records_rest import InvenioRecordsREST
+from invenio_records_rest.utils import PIDConverter
+from invenio_webhooks import InvenioWebhooks
+from invenio_webhooks.views import blueprint as webhooks_blueprint
 
 from invenio_circulation import InvenioCirculation
 
 # Create Flask application
 app = Flask(__name__)
+app.url_map.converters['pid'] = PIDConverter
+
+app.config.update(
+    SQLALCHEMY_DATABASE_URI=os.getenv(
+        'SQLALCHEMY_DATABASE_URI', 'postgresql+psycopg2://localhost/app'),
+    OAUTH2SERVER_CLIENT_ID_SALT_LEN=40,
+    OAUTH2SERVER_CLIENT_SECRET_SALT_LEN=60,
+    OAUTH2SERVER_TOKEN_PERSONAL_SALT_LEN=60,
+    SECRET_KEY='changeme',
+    SERVER_NAME='localhost:5000',
+)
+
 Babel(app)
+FlaskCLI(app)
+Menu(app)
+Breadcrumbs(app)
+InvenioAccounts(app)
+InvenioDB(app)
+InvenioJSONSchemas(app)
+InvenioPIDStore(app)
+InvenioRecords(app)
+InvenioRecordsREST(app)
+InvenioWebhooks(app)
+InvenioOAuth2Server(app)
 InvenioCirculation(app)
+
+app.register_blueprint(server_blueprint)
+app.register_blueprint(settings_blueprint)
+app.register_blueprint(webhooks_blueprint)

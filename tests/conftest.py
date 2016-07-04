@@ -32,13 +32,26 @@ import tempfile
 
 import pytest
 from flask import Flask
+from flask_babelex import Babel
+from flask_breadcrumbs import Breadcrumbs
 from flask_cli import FlaskCLI
+from flask_menu import Menu
+from flask_security.utils import encrypt_password
+from invenio_accounts import InvenioAccounts
 from invenio_db import db as db_
 from invenio_db import InvenioDB
 from invenio_jsonschemas import InvenioJSONSchemas
+from invenio_oauth2server import InvenioOAuth2Server
+from invenio_oauth2server.models import Token
+from invenio_oauth2server.views import server_blueprint, settings_blueprint
+from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
+from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
+from invenio_webhooks import InvenioWebhooks
+from invenio_webhooks.views import blueprint as webhooks_blueprint
 from sqlalchemy_utils.functions import create_database, database_exists
+from werkzeug.local import LocalProxy
 
 from invenio_circulation import InvenioCirculation
 
@@ -47,18 +60,37 @@ from invenio_circulation import InvenioCirculation
 def app(request):
     """Flask application fixture."""
     instance_path = tempfile.mkdtemp()
+
     app_ = Flask(__name__, instance_path=instance_path)
     app_.config.update(
+        OAUTH2SERVER_CLIENT_ID_SALT_LEN=40,
+        OAUTH2SERVER_CLIENT_SECRET_SALT_LEN=60,
+        OAUTH2SERVER_TOKEN_PERSONAL_SALT_LEN=60,
+        SECRET_KEY='changeme',
+        SERVER_NAME='localhost:5000',
+        REPLACE_REFS=False,
         TESTING=True,
     )
 
     app_.url_map.converters['pid'] = PIDConverter
 
+    Babel(app_)
     FlaskCLI(app_)
+    Menu(app_)
+    Breadcrumbs(app_)
+    InvenioAccounts(app_)
     InvenioDB(app_)
     InvenioJSONSchemas(app_)
+    InvenioPIDStore(app_)
     InvenioRecords(app_)
+    InvenioRecordsREST(app_)
+    InvenioWebhooks(app_)
+    InvenioOAuth2Server(app_)
     InvenioCirculation(app_)
+
+    app_.register_blueprint(server_blueprint)
+    app_.register_blueprint(settings_blueprint)
+    app_.register_blueprint(webhooks_blueprint)
 
     with app_.app_context():
         yield app_
@@ -76,3 +108,23 @@ def db(app):
     yield db_
     db_.session.remove()
     db_.drop_all()
+
+
+@pytest.yield_fixture()
+def access_token(app, db):
+    _datastore = LocalProxy(lambda: app.extensions['security'].datastore)
+    kwargs = dict(email='admin@inveniosoftware.org', password='123456',
+                  active=True)
+    kwargs['password'] = encrypt_password(kwargs['password'])
+    user = _datastore.create_user(**kwargs)
+
+    db.session.commit()
+    token = Token.create_personal(
+        'test-personal-{0}'.format(user.id),
+        user.id,
+        scopes=['webhooks:event'],
+        is_internal=True,
+    ).access_token
+    db.session.commit()
+
+    yield token

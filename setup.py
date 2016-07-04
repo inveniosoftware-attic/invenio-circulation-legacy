@@ -66,6 +66,7 @@ install_requires = [
     'invenio-pidstore>=1.0.0a7',
     'invenio-records>=1.0.0a15',
     'invenio-records-rest>=1.0.0a15',
+    'invenio-webhooks>=1.0.0a2',
     'python-slugify>=1.2.0',
 ]
 
@@ -104,6 +105,14 @@ setup(
         ],
         'invenio_jsonschemas.schemas': [
             'circulation = invenio_circulation.schemas',
+        ],
+        'invenio_webhooks.receivers': [
+            'circulation_{0} = invenio_circulation.receivers:{1}Receiver'
+            .format(x, y)
+            for x, y in [('loan', 'Loan'), ('request', 'Request'),
+                         ('return', 'Return'), ('lose', 'Lose'),
+                         ('return_missing', 'ReturnMissing'),
+                         ('cancel', 'Cancel'), ('extend', 'Extend')]
         ],
     },
     extras_require=extras_require,
