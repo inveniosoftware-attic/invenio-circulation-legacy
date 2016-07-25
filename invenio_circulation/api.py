@@ -26,6 +26,7 @@
 
 import uuid
 from functools import partial, wraps
+from operator import indexOf
 
 from flask import current_app
 from invenio_pidstore.errors import PIDInvalidAction
@@ -51,6 +52,72 @@ def check_status(method=None, statuses=None):
     return wrapper
 
 
+class Holding(dict):
+    """Holding class to create and maintain holdings."""
+
+    @classmethod
+    def create(cls, id_=None):
+        """Create a valid holding."""
+        return cls(id=id_ or str(uuid.uuid4()))
+
+
+class HoldingIterator(object):
+    """Data access object to manage holdings associated to an item."""
+
+    def __init__(self, iterable):
+        """Initialize iterator."""
+        self._iterable = iterable
+
+    def __len__(self):
+        """Get number of files."""
+        return len(self._iterable)
+
+    def __iter__(self):
+        """Get iterator."""
+        self._it = iter(self._iterable)
+        return self._it
+
+    def next(self):
+        """Python 2.7 compatibility."""
+        return self.__next__()  # pragma: no cover
+
+    def __next__(self):
+        """Get next file item."""
+        return next(self._it)   # pragma: no cover
+
+    def __contains__(self, id_):
+        """Check if HoldingIterator contains a Holding by id."""
+        return id_ in (x['id'] for x in self)
+
+    def __getitem__(self, key):
+        """Get a specific file."""
+        return self._iterable[key]  # pragma: no cover
+
+    def __setitem__(self, key, obj):
+        """Add file inside a deposit."""
+        self._iterable[key] = obj   # pragma: no cover
+
+    def __delitem__(self, id_):
+        """Delete a Holding by id.
+
+        :raises ValueError:
+        """
+        index = indexOf((x['id'] for x in self), id_)
+        del self._iterable[index]
+
+    def append(self, obj):
+        """Append a holding to the end."""
+        self._iterable.append(obj)
+
+    def insert(self, index, obj):
+        """Insert a holding before given index."""
+        self._iterable.insert(index, obj)
+
+    def pop(self, index):
+        """Remove and return a holding at index (default is last)."""
+        return self._iterable.pop(index)
+
+
 class Location(Record):
     """Data model to store location information."""
 
@@ -68,6 +135,11 @@ class Location(Record):
 
 class Item(Record):
     """Data model to store holding information."""
+
+    @property
+    def holdings(self):
+        """Property of holdings associated with the given item."""
+        return HoldingIterator(self['_circulation']['holdings'])
 
     @classmethod
     def create(cls, data, id_=None):
@@ -101,9 +173,7 @@ class Item(Record):
         :param delivery: 'pickup' or 'mail'
         """
         self['_circulation']['status'] = ItemStatus.ON_LOAN
-
-        holding = {'_id': str(uuid.uuid4())}
-        self['_circulation']['holdings'].insert(0, holding)
+        self.holdings.insert(0, Holding.create())
 
     @check_status(statuses=[ItemStatus.ON_LOAN,
                             ItemStatus.ON_SHELF])
@@ -120,8 +190,7 @@ class Item(Record):
                          be put on a waitlist.
         :param delivery: 'pickup' or 'mail'
         """
-        holding = {'_id': str(uuid.uuid4())}
-        self['_circulation']['holdings'].append(holding)
+        self.holdings.append(Holding.create())
 
     @check_status(statuses=[ItemStatus.ON_LOAN])
     def return_item(self):
@@ -131,7 +200,7 @@ class Item(Record):
         """
         self['_circulation']['status'] = ItemStatus.ON_SHELF
 
-        del self['_circulation']['holdings'][0]
+        self.holdings.pop(0)
 
     @check_status(statuses=[ItemStatus.ON_LOAN,
                             ItemStatus.ON_SHELF])
@@ -143,8 +212,8 @@ class Item(Record):
         """
         self['_circulation']['status'] = ItemStatus.MISSING
 
-        for holding in self['_circulation']['holdings']:
-            self.cancel_hold(holding['_id'])
+        for holding in self.holdings:
+            self.cancel_hold(holding['id'])
 
     @check_status(statuses=[ItemStatus.MISSING])
     def return_missing_item(self):
@@ -160,12 +229,7 @@ class Item(Record):
         The item's corresponding hold information wil be removed.
         This action updates the waitlist.
         """
-        for i, holding in enumerate(self['_circulation']['holdings'][:]):
-            if holding['_id'] == id_:
-                del self['_circulation']['holdings'][i]
-                return
-        else:
-            raise Exception('Holding id does not exist.')
+        del self.holdings[id_]
 
     @check_status(statuses=[ItemStatus.ON_LOAN])
     def extend_loan(self, requested_end_date=None):

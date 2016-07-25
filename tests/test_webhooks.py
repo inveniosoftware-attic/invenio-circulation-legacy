@@ -85,7 +85,7 @@ def test_request_cancel_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_cancel')
             url += '?access_token=' + access_token
-            hold_id = item['_circulation']['holdings'][0]['_id']
+            hold_id = item['_circulation']['holdings'][0]['id']
             data = {'item_id': item.id, 'hold_id': hold_id}
             res = client.post(url, data=data)
 
