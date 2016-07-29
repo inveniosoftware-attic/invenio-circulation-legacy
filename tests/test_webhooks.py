@@ -34,6 +34,23 @@ from invenio_circulation.api import Item
 from invenio_circulation.models import ItemStatus
 
 
+def test_receiver_base(app, db, access_token):
+    """Test ReceiverBase failure behavior."""
+    item = Item.create({})
+    db.session.commit()
+    with app.test_request_context():
+        with app.test_client() as client:
+            url = url_for('invenio_webhooks.event_list',
+                          receiver_id='circulation_loan')
+            url += '?access_token=' + access_token
+            yesterday = datetime.date.today() + datetime.timedelta(days=-1)
+            data = {'item_id': str(item.id), 'start_date': str(yesterday)}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
+
+            assert res.status_code == 400
+
+
 def test_loan_return_receiver(app, db, access_token):
     """Use the webhooks api to loan and return an item."""
     item = Item.create({})

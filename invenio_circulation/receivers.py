@@ -28,7 +28,9 @@
 from invenio_db import db
 from invenio_webhooks.models import Receiver
 
-from invenio_circulation.api import Item
+from .api import Item
+from .validators import CancelItemSchema, ExtendItemSchema, LoanItemSchema, \
+    RequestItemSchema, ReturnItemSchema, ReturnMissingItemSchema
 
 
 class ReceiverBase(Receiver):
@@ -41,13 +43,25 @@ class ReceiverBase(Receiver):
         in a nested transaction.
         """
         item = Item.get_record(event.payload['item_id'])
+        if hasattr(self, 'circulation_event_schema'):
+            self.circulation_event_schema.context['item'] = item
+            data, errors = self.circulation_event_schema.load(event.payload)
+            if errors:
+                event.response_code = 400
+                event.response = {'message': errors}
+                return
+        else:
+            data = event.payload
+
         with db.session.begin_nested():
-            self._run(item, event.payload)
+            self._run(item, data)
             item.commit()
 
 
 class LoanReceiver(ReceiverBase):
     """Handle incomming loan requests."""
+
+    circulation_event_schema = LoanItemSchema()
 
     def _run(self, item, payload):
         """Process a loan event."""
@@ -57,6 +71,8 @@ class LoanReceiver(ReceiverBase):
 class RequestReceiver(ReceiverBase):
     """Handle incomming requests."""
 
+    circulation_event_schema = RequestItemSchema()
+
     def _run(self, item, payload):
         """Process a request event."""
         item.request_item(**payload)
@@ -64,6 +80,8 @@ class RequestReceiver(ReceiverBase):
 
 class ReturnReceiver(ReceiverBase):
     """Handle incomming return requests."""
+
+    circulation_event_schema = ReturnItemSchema()
 
     def _run(self, item, _):
         """Process a return event."""
@@ -81,6 +99,8 @@ class LoseReceiver(ReceiverBase):
 class ReturnMissingReceiver(ReceiverBase):
     """Handle incomming return_missing requests."""
 
+    circulation_event_schema = ReturnMissingItemSchema()
+
     def _run(self, item, _):
         """Process a return_missing event."""
         item.return_missing_item()
@@ -89,6 +109,8 @@ class ReturnMissingReceiver(ReceiverBase):
 class CancelReceiver(ReceiverBase):
     """Handle incomming cancel requests."""
 
+    circulation_event_schema = CancelItemSchema()
+
     def _run(self, item, payload):
         """Process a cancel event."""
         item.cancel_hold(payload['hold_id'])
@@ -96,6 +118,8 @@ class CancelReceiver(ReceiverBase):
 
 class ExtendReceiver(ReceiverBase):
     """Handle incomming extension requests."""
+
+    circulation_event_schema = ExtendItemSchema()
 
     def _run(self, item, payload):
         """Process an extend event."""

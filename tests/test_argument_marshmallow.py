@@ -97,10 +97,10 @@ def test_marshmallow_cancel(app):
         validate(CancelArgument(), {})
 
     # Validate given uuid
-    assert not validate(CancelArgument(), {'id': uuid.uuid4()})
+    assert not validate(CancelArgument(), {'hold_id': uuid.uuid4()})
 
     # Validate given uuid as string
-    assert not validate(CancelArgument(), {'id': str(uuid.uuid4())})
+    assert not validate(CancelArgument(), {'hold_id': str(uuid.uuid4())})
 
 
 def test_marshmallow_extend_loan(app):

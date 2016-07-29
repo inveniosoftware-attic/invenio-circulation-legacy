@@ -102,7 +102,7 @@ class HoldingIterator(object):
 
         :raises ValueError:
         """
-        index = indexOf((x['id'] for x in self), id_)
+        index = indexOf((x['id'] for x in self), str(id_))
         del self._iterable[index]
 
     def append(self, obj):
