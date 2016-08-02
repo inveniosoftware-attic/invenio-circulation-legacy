@@ -40,7 +40,7 @@ class ReceiverBase(Receiver):
         This method builds the frame, fetching the item and calling *_run*
         in a nested transaction.
         """
-        item = Item.get_record(event.payload['item_id'][0])
+        item = Item.get_record(event.payload['item_id'])
         with db.session.begin_nested():
             self._run(item, event.payload)
             item.commit()
@@ -91,7 +91,7 @@ class CancelReceiver(ReceiverBase):
 
     def _run(self, item, payload):
         """Process a cancel event."""
-        item.cancel_hold(payload['hold_id'][0])
+        item.cancel_hold(payload['hold_id'])
 
 
 class ExtendReceiver(ReceiverBase):
@@ -99,4 +99,4 @@ class ExtendReceiver(ReceiverBase):
 
     def _run(self, item, payload):
         """Process an extend event."""
-        item.extend_loan(payload['requested_end_date'][0])
+        item.extend_loan(payload['requested_end_date'])

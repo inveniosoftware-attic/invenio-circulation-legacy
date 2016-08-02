@@ -26,6 +26,7 @@
 """Module webhook tests."""
 
 import datetime
+import json
 
 from flask import url_for
 
@@ -42,8 +43,9 @@ def test_loan_return_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_loan')
             url += '?access_token=' + access_token
-            data = {'item_id': item.id}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id)}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
@@ -54,8 +56,9 @@ def test_loan_return_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_return')
             url += '?access_token=' + access_token
-            data = {'item_id': item.id}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id)}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
@@ -73,8 +76,9 @@ def test_request_cancel_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_request')
             url += '?access_token=' + access_token
-            data = {'item_id': item.id}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id)}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
@@ -86,8 +90,9 @@ def test_request_cancel_receiver(app, db, access_token):
                           receiver_id='circulation_cancel')
             url += '?access_token=' + access_token
             hold_id = item['_circulation']['holdings'][0]['id']
-            data = {'item_id': item.id, 'hold_id': hold_id}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id), 'hold_id': hold_id}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
@@ -105,8 +110,9 @@ def test_lose_return_missing_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_lose')
             url += '?access_token=' + access_token
-            data = {'item_id': item.id}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id)}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
@@ -116,8 +122,9 @@ def test_lose_return_missing_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_return_missing')
             url += '?access_token=' + access_token
-            data = {'item_id': item.id}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id)}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
@@ -134,8 +141,9 @@ def test_extend_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_loan')
             url += '?access_token=' + access_token
-            data = {'item_id': item.id}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id)}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
@@ -145,9 +153,10 @@ def test_extend_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_extend')
             url += '?access_token=' + access_token
-            data = {'item_id': item.id,
-                    'requested_end_date': datetime.date.today()}
-            res = client.post(url, data=data)
+            data = {'item_id': str(item.id),
+                    'requested_end_date': datetime.date.today().isoformat()}
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
 
             assert res.status_code == 202
 
