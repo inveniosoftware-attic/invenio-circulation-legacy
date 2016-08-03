@@ -59,7 +59,7 @@ def test_loan_item_marshmallow(app, db):
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=4),
     }
     errors = circulation_event_schema.validate(arguments)
-    assert '_schema' in errors
+    assert 'start_date' in errors
 
     # Invalid duration
     arguments = {
@@ -110,7 +110,7 @@ def test_request_item_marshmallow(app, db):
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=4),
     }
     errors = circulation_event_schema.validate(arguments)
-    assert '_schema' in errors
+    assert 'start_date' in errors
 
     # Invalid duration
     arguments = {

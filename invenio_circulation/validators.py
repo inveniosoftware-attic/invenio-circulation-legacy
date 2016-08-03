@@ -30,7 +30,7 @@ import datetime
 import uuid
 
 from flask import current_app
-from marshmallow import Schema, ValidationError, fields, pre_load
+from marshmallow import Schema, ValidationError, fields
 from marshmallow.decorators import validates, validates_schema
 
 from .models import ItemStatus
@@ -40,9 +40,10 @@ def _today():
     return datetime.date.today()
 
 
-def _max_loan_duration():
+def _max_loan_duration(start_date=None):
+    start_date = start_date or _today()
     loan_duration = current_app.config['CIRCULATION_LOAN_PERIOD']
-    return _today() + datetime.timedelta(days=loan_duration)
+    return start_date + datetime.timedelta(days=loan_duration)
 
 
 def validate(schema, kwargs):
@@ -84,17 +85,6 @@ class LoanArgument(Schema):
         if obj not in ['mail', 'pickup']:
             raise ValidationError('Delivery is neither *mail* nor *pickup*.')
 
-    @pre_load
-    def make_loan_argument(self, data):
-        """Set defaults after loading."""
-        for name, field in self.fields.items():
-            data.setdefault(
-                name,
-                field.default() if callable(field.default) else field.default
-            )
-
-        return data
-
 
 class RequestArgument(LoanArgument):
     """Marshmallow Schema class to validate Item.loan_item arguments."""
@@ -111,16 +101,6 @@ class ExtensionArgument(Schema):
 
     requested_end_date = DateField(default=_max_loan_duration)
 
-    @pre_load
-    def make_loan_argument(self, data):
-        """Set defaults after loading."""
-        for name, field in self.fields.items():
-            data.setdefault(
-                name,
-                field.default() if callable(field.default) else field.default
-            )
-        return data
-
 
 class ArgumentDurationMixin(object):
     """Marshmallow mixin to check the loan duration."""
@@ -128,6 +108,9 @@ class ArgumentDurationMixin(object):
     @validates_schema
     def validate_duration(self, data):
         """Check if loan duration is valid."""
+        data.setdefault('start_date', _today())
+        data.setdefault('end_date', _max_loan_duration(data['start_date']))
+
         duration = (data['end_date'] - data['start_date']).days
         if duration > current_app.config['CIRCULATION_LOAN_PERIOD']:
             raise ValidationError('Loan duration too long.')
@@ -136,10 +119,10 @@ class ArgumentDurationMixin(object):
 class LoanItemSchema(ArgumentDurationMixin, LoanArgument):
     """Marshmallow Schema class to validate loan_item arguments."""
 
-    @validates_schema
-    def validate_start(self, data):
+    @validates('start_date')
+    def validate_start(self, start_date):
         """Check if start_date is today."""
-        if data['start_date'] != datetime.date.today():
+        if start_date != datetime.date.today():
             raise ValidationError('Start date must be today.')
 
     @validates_schema
@@ -158,11 +141,11 @@ class LoanItemSchema(ArgumentDurationMixin, LoanArgument):
 class RequestItemSchema(ArgumentDurationMixin, RequestArgument):
     """Marshmallow Schema class to validate request_item arguments."""
 
-    @validates_schema
-    def validate_start(self, data):
+    @validates('start_date')
+    def validate_start(self, start_date):
         """Check if start_date is today."""
-        if data['start_date'] < datetime.date.today():
-            raise ValidationError('Start date must be today.')
+        if start_date < datetime.date.today():
+            raise ValidationError('Start date must be today or later.')
 
     @validates_schema
     def validate_status(self, data):
@@ -221,6 +204,9 @@ class ExtendItemSchema(ExtensionArgument):
     @validates_schema
     def validate_requested_end_date(self, data):
         """Assert the that the requested end date is valid."""
+        if 'requested_end_date' not in data:
+            return
+
         loan_duration = current_app.config['CIRCULATION_LOAN_PERIOD']
         max_loan = _today() + datetime.timedelta(days=loan_duration)
 

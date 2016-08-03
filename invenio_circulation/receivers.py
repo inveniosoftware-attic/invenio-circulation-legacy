@@ -50,6 +50,7 @@ class ReceiverBase(Receiver):
                 event.response_code = 400
                 event.response = {'message': errors}
                 return
+            data, _ = self.circulation_event_schema.dump(data)
         else:
             data = event.payload
 

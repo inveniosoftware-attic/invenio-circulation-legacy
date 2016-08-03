@@ -56,9 +56,9 @@ class Holding(dict):
     """Holding class to create and maintain holdings."""
 
     @classmethod
-    def create(cls, id_=None):
+    def create(cls, id_=None, **kwargs):
         """Create a valid holding."""
-        return cls(id=id_ or str(uuid.uuid4()))
+        return cls(id=id_ or kwargs.pop('id', str(uuid.uuid4())), **kwargs)
 
 
 class HoldingIterator(object):
@@ -173,7 +173,7 @@ class Item(Record):
         :param delivery: 'pickup' or 'mail'
         """
         self['_circulation']['status'] = ItemStatus.ON_LOAN
-        self.holdings.insert(0, Holding.create())
+        self.holdings.insert(0, Holding.create(**kwargs))
 
     @check_status(statuses=[ItemStatus.ON_LOAN,
                             ItemStatus.ON_SHELF])
@@ -190,7 +190,7 @@ class Item(Record):
                          be put on a waitlist.
         :param delivery: 'pickup' or 'mail'
         """
-        self.holdings.append(Holding.create())
+        self.holdings.append(Holding.create(**kwargs))
 
     @check_status(statuses=[ItemStatus.ON_LOAN])
     def return_item(self):
@@ -238,3 +238,5 @@ class Item(Record):
         A possible status ItemStatus.OVERDUE will be removed.
         """
         self['_circulation']['status'] = ItemStatus.ON_LOAN
+
+        self.holdings[0]['end_date'] = requested_end_date
