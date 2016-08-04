@@ -30,6 +30,7 @@ import datetime
 import uuid
 
 from flask import current_app
+from intervals import DateInterval, IllegalArgument
 from marshmallow import Schema, ValidationError, fields
 from marshmallow.decorators import validates, validates_schema
 
@@ -74,8 +75,8 @@ class UUIDField(fields.UUID):
 class LoanArgument(Schema):
     """Marshmallow Schema class to validate Item.loan_item arguments."""
 
-    start_date = DateField(default=_today)
-    end_date = DateField(default=_max_loan_duration)
+    start_date = DateField(default=lambda: _today().isoformat())
+    end_date = DateField(default=lambda: _max_loan_duration().isoformat())
     waitlist = fields.Boolean(default=False)
     delivery = fields.String(default='mail')
 
@@ -116,7 +117,57 @@ class ArgumentDurationMixin(object):
             raise ValidationError('Loan duration too long.')
 
 
-class LoanItemSchema(ArgumentDurationMixin, LoanArgument):
+class HoldingSchema(Schema):
+    """Marshmallow mixin to check if holding overlaps with given interval."""
+
+    start_date = DateField()
+    end_date = DateField()
+
+    @validates_schema
+    def validate_interval(self, data):
+        """Check if holding blocks the loan/request."""
+        # Create an interval for the currently checked holding
+        # holding['start_date'] -> holding['end_date']
+        holding_interval = DateInterval([data['start_date'], data['end_date']])
+
+        # If there is an intersection between those two intervals, then the
+        # desired dates of the requested holding are not available
+        try:
+            intersection = holding_interval & self.context['request_interval']
+            raise ValidationError(intersection)
+        except IllegalArgument:
+            pass
+
+
+class ArgumentHoldingMixin(object):
+    """Marshmallow mixin to check blocking holdings."""
+
+    @validates_schema
+    def validate_holdings(self, data):
+        """Check if another holding blocks the loan/request."""
+        item = self.context['item']
+
+        start = data.get('start_date', _today())
+        end = data.get('end_date', _max_loan_duration(start))
+
+        # Create an interval for the requested/new holding
+        holding_schema = HoldingSchema(
+            context={'request_interval': DateInterval([start, end])}
+        )
+
+        errors = []
+        for hold in item.holdings:
+            current_error = holding_schema.validate(hold)
+
+            if current_error:
+                errors.append((hold['id'], current_error))
+
+        if errors:
+            raise ValidationError(errors)
+
+
+class LoanItemSchema(ArgumentDurationMixin, ArgumentHoldingMixin,
+                     LoanArgument):
     """Marshmallow Schema class to validate loan_item arguments."""
 
     @validates('start_date')
@@ -132,13 +183,9 @@ class LoanItemSchema(ArgumentDurationMixin, LoanArgument):
         if item['_circulation']['status'] != ItemStatus.ON_SHELF:
             raise ValidationError('Status must be on_shelf.')
 
-    @validates_schema
-    def validate_holdings(self, data):
-        """Check if another holding blocks the loan."""
-        # TODO: define the holding first
 
-
-class RequestItemSchema(ArgumentDurationMixin, RequestArgument):
+class RequestItemSchema(ArgumentDurationMixin, ArgumentHoldingMixin,
+                        RequestArgument):
     """Marshmallow Schema class to validate request_item arguments."""
 
     @validates('start_date')
@@ -154,11 +201,6 @@ class RequestItemSchema(ArgumentDurationMixin, RequestArgument):
         if item['_circulation']['status'] == ItemStatus.MISSING:
             raise ValidationError('The item is currently missing.')
 
-    @validates_schema
-    def validate_holdings(self, data):
-        """Check if another holding blocks the loan."""
-        # TODO: define the holding first
-
 
 class ReturnItemSchema(Schema):
     """Marshmallow Schema class to validate return_item arguments."""
@@ -171,7 +213,14 @@ class ReturnItemSchema(Schema):
         if not item.holdings:
             raise ValidationError('There is no active loan.')
 
-        # TODO: define the holding first
+        # An active loan exists if item.holding[0]['start_date'] is today (the
+        # momemnt the item is returned) or earlier. Otherwise, it's a request
+        holding_start_date = datetime.datetime.strptime(
+            item.holdings[0]['start_date'],
+            current_app.config['CIRCULATION_DATE_FORMAT']
+        ).date()
+        if _today() < holding_start_date:
+            raise ValidationError('There is no active loan.')
 
 
 class ReturnMissingItemSchema(Schema):

@@ -25,3 +25,6 @@ CIRCULATION_LOAN_PERIOD = 28
 
 CIRCULATION_LOCATION_SCHEMA = 'circulation/location-v1.0.0.json'
 CIRCULATION_ITEM_SCHEMA = 'circulation/item-v1.0.0.json'
+
+CIRCULATION_DATE_FORMAT = '%Y-%m-%d'
+"""Datetime format used to parse date strings."""

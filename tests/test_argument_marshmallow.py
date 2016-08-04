@@ -45,9 +45,9 @@ def test_marshmallow_loan_request(app, argument_schema):
 
     # Check the default value behavior
     defaults = argument_schema().dump({}).data
-    assert defaults['start_date'] == datetime.date.today()
+    assert defaults['start_date'] == datetime.date.today().isoformat()
     assert defaults['end_date'] == (datetime.date.today() +
-                                    datetime.timedelta(days=CLP))
+                                    datetime.timedelta(days=CLP)).isoformat()
     assert defaults['waitlist'] is False
     assert defaults['delivery'] == 'mail'
 

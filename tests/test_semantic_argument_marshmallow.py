@@ -26,8 +26,9 @@
 """Semantic argument marshmallowing tests."""
 
 import datetime
-import json
 import uuid
+
+import pytest
 
 from invenio_circulation.api import Item, ItemStatus
 from invenio_circulation.validators import CancelItemSchema, \
@@ -44,37 +45,31 @@ def test_loan_item_marshmallow(app, db):
     circulation_event_schema.context['item'] = item
 
     # Valid arguments
-    arguments = {}
-    assert not circulation_event_schema.validate(arguments)
-
-    arguments = {
+    assert not circulation_event_schema.validate({})
+    assert not circulation_event_schema.validate({
         'start_date': datetime.date.today(),
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=4),
-    }
-    assert not circulation_event_schema.validate(arguments)
+    })
 
     # Invalid start date
-    arguments = {
+    errors = circulation_event_schema.validate({
         'start_date': datetime.date.today() + datetime.timedelta(days=1),
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=4),
-    }
-    errors = circulation_event_schema.validate(arguments)
+    })
     assert 'start_date' in errors
 
     # Invalid duration
-    arguments = {
+    errors = circulation_event_schema.validate({
         'start_date': datetime.date.today(),
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=5),
-    }
-    errors = circulation_event_schema.validate(arguments)
+    })
     assert '_schema' in errors
 
     # Invalid item status
-    arguments = {}
     item['_circulation']['status'] = 'foo'
     circulation_event_schema.context['item'] = item
 
-    errors = circulation_event_schema.validate(arguments)
+    errors = circulation_event_schema.validate({})
     assert '_schema' in errors
 
 
@@ -87,45 +82,38 @@ def test_request_item_marshmallow(app, db):
     circulation_event_schema.context['item'] = item
 
     # Valid arguments
-    arguments = {}
-    assert not circulation_event_schema.validate(arguments)
-
-    arguments = {
+    assert not circulation_event_schema.validate({})
+    assert not circulation_event_schema.validate({
         'start_date': datetime.date.today(),
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=4),
-    }
-    assert not circulation_event_schema.validate(arguments)
+    })
 
     # Valid arguments date in the future
-    arguments = {
+    errors = circulation_event_schema.validate({
         'start_date': datetime.date.today() + datetime.timedelta(days=1),
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=4),
-    }
-    errors = circulation_event_schema.validate(arguments)
-    assert not circulation_event_schema.validate(arguments)
+    })
+    assert not errors
 
     # Invalid start date
-    arguments = {
+    errors = circulation_event_schema.validate({
         'start_date': datetime.date.today() + datetime.timedelta(days=-1),
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=4),
-    }
-    errors = circulation_event_schema.validate(arguments)
+    })
     assert 'start_date' in errors
 
     # Invalid duration
-    arguments = {
+    errors = circulation_event_schema.validate({
         'start_date': datetime.date.today(),
         'end_date':  datetime.date.today() + datetime.timedelta(weeks=5),
-    }
-    errors = circulation_event_schema.validate(arguments)
+    })
     assert '_schema' in errors
 
     # Invalid item status
-    arguments = {}
     item['_circulation']['status'] = ItemStatus.MISSING
     circulation_event_schema.context['item'] = item
 
-    errors = circulation_event_schema.validate(arguments)
+    errors = circulation_event_schema.validate({})
     assert '_schema' in errors
 
 
@@ -138,8 +126,15 @@ def test_return_item_marshmallow(app, db):
     circulation_event_schema.context['item'] = item
 
     # No item to return arguments
-    arguments = {}
-    errors = circulation_event_schema.validate(arguments)
+    errors = circulation_event_schema.validate({})
+    assert '_schema' in errors
+
+    # No active hold
+    item.request_item(**RequestItemSchema().dump({
+        'start_date': datetime.date.today() + datetime.timedelta(weeks=1),
+    }).data)
+    item.commit()
+    errors = circulation_event_schema.validate({})
     assert '_schema' in errors
 
 
@@ -152,12 +147,11 @@ def test_return_missing_item_marshmallow(app, db):
     circulation_event_schema.context['item'] = item
 
     # Item not missing
-    arguments = {}
-    errors = circulation_event_schema.validate(arguments)
+    errors = circulation_event_schema.validate({})
     assert '_schema' in errors
 
     item.lose_item()
-    assert not circulation_event_schema.validate(arguments)
+    assert not circulation_event_schema.validate({})
 
 
 def test_cancel_item_marshmallow(app, db):
@@ -172,13 +166,15 @@ def test_cancel_item_marshmallow(app, db):
     circulation_event_schema.context['item'] = item
 
     # No existing UUID
-    arguments = {'hold_id': str(uuid.uuid4())}
-    errors = circulation_event_schema.validate(arguments)
+    errors = circulation_event_schema.validate({
+        'hold_id': str(uuid.uuid4())
+    })
     assert '_schema' in errors
 
     # Valid argument
-    arguments = {'hold_id': str(hold_id)}
-    assert not circulation_event_schema.validate(arguments)
+    assert not circulation_event_schema.validate({
+        'hold_id': str(hold_id)
+    })
 
 
 def test_extend_loan_marshmallow(app, db):
@@ -190,11 +186,69 @@ def test_extend_loan_marshmallow(app, db):
     circulation_event_schema.context['item'] = item
 
     # Valid arguments
-    arguments = {}
-    assert not circulation_event_schema.validate(arguments)
+    assert not circulation_event_schema.validate({})
 
     # Date too far in the future
     requested_end_date = datetime.date.today() + datetime.timedelta(weeks=5)
-    arguments = {'requested_end_date': requested_end_date}
-    errors = circulation_event_schema.validate(arguments)
+    errors = circulation_event_schema.validate({
+        'requested_end_date': requested_end_date
+    })
     assert '_schema' in errors
+
+
+@pytest.mark.parametrize((
+    'request_arguments',
+    'validate_arguments',
+    'assert_statement'
+), [
+    # Request non-overlapping
+    # Existing: |---|
+    # New:           |---|
+    ({},
+     {'start_date': datetime.date.today() + datetime.timedelta(weeks=5)},
+     lambda errors: not errors
+     ),
+    # Try to request for the same period
+    # Existing: |---|
+    # New:      |---|
+    ({},
+     {},
+     lambda errors: '_schema' in errors
+     ),
+    # Try to request with overlap
+    # Existing: |---|
+    # New:        |---|
+    ({},
+     {'start_date': datetime.date.today() + datetime.timedelta(weeks=2)},
+     lambda errors: '_schema' in errors
+     ),
+    # Try to request with overlap
+    # Existing:   |---|
+    # New:      |---|
+    ({'start_date': datetime.date.today() + datetime.timedelta(weeks=2)},
+     {},
+     lambda errors: '_schema' in errors
+     ),
+    # Try to request including
+    # Existing:  |-|
+    # New:      |---|
+    ({'start_date': datetime.date.today() + datetime.timedelta(weeks=1),
+      'end_date': datetime.date.today() + datetime.timedelta(weeks=2)},
+     {},
+     lambda errors: '_schema' in errors
+     )
+])
+def test_blocking_holds(app, db,
+                        request_arguments,
+                        validate_arguments,
+                        assert_statement):
+    item = Item.create({})
+    db.session.commit()
+
+    circulation_event_schema = RequestItemSchema()
+    circulation_event_schema.context['item'] = item
+
+    item.request_item(**RequestItemSchema().dump(request_arguments).data)
+    item.commit()
+    errors = circulation_event_schema.validate(validate_arguments)
+    assert assert_statement(errors)
