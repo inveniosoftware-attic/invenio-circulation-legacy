@@ -50,6 +50,7 @@ def test_marshmallow_loan_request(app, argument_schema):
                                     datetime.timedelta(days=CLP)).isoformat()
     assert defaults['waitlist'] is False
     assert defaults['delivery'] == 'mail'
+    assert 'user_id' in defaults
 
     # Test correct arguments
     arguments = {'start_date': datetime.date.today(),

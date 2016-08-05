@@ -27,7 +27,10 @@
 
 import uuid
 
+import pytest
+
 from invenio_circulation.api import Holding, Item
+from invenio_circulation.validators import LoanItemSchema, RequestItemSchema
 
 
 def test_holdings(app, db):
@@ -60,3 +63,26 @@ def test_holdings(app, db):
     assert len(item.holdings) == 1
     assert id2 not in item.holdings
     assert id1 in item.holdings
+
+
+@pytest.mark.parametrize(('action', 'schema'), [
+    (lambda item, data: item.loan_item(**data), LoanItemSchema),
+    (lambda item, data: item.request_item(**data), RequestItemSchema),
+])
+def test_holding_values(app, db, action, schema):
+    """Test holding values exist for loan_item/request_item."""
+    # Loan an item
+    item = Item.create({})
+
+    assert not item.holdings
+
+    action(item, schema().dump({}).data)
+    item.commit()
+
+    holding = item.holdings[0]
+    assert len(item.holdings) == 1
+    assert 'start_date' in holding
+    assert 'end_date' in holding
+    assert 'waitlist' in holding
+    assert 'delivery' in holding
+    assert 'user_id' in holding

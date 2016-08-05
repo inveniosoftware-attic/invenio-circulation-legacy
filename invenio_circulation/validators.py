@@ -30,6 +30,7 @@ import datetime
 import uuid
 
 from flask import current_app
+from flask_login import current_user
 from intervals import DateInterval, IllegalArgument
 from marshmallow import Schema, ValidationError, fields
 from marshmallow.decorators import validates, validates_schema
@@ -45,6 +46,13 @@ def _max_loan_duration(start_date=None):
     start_date = start_date or _today()
     loan_duration = current_app.config['CIRCULATION_LOAN_PERIOD']
     return start_date + datetime.timedelta(days=loan_duration)
+
+
+def _get_current_user_id():
+    """Get the id of the current_user, if existing."""
+    if current_user:
+        return current_user.id
+    return None
 
 
 def validate(schema, kwargs):
@@ -79,6 +87,7 @@ class LoanArgument(Schema):
     end_date = DateField(default=lambda: _max_loan_duration().isoformat())
     waitlist = fields.Boolean(default=False)
     delivery = fields.String(default='mail')
+    user_id = fields.Integer(default=_get_current_user_id)
 
     @validates('delivery')
     def validate_delivery(self, obj):
