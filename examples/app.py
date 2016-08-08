@@ -44,6 +44,7 @@ from flask_cli import FlaskCLI
 from flask_menu import Menu
 from invenio_accounts import InvenioAccounts
 from invenio_db import InvenioDB
+from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
 from invenio_oauth2server import InvenioOAuth2Server
 from invenio_oauth2server.views import server_blueprint, settings_blueprint
@@ -51,6 +52,7 @@ from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
+from invenio_search import InvenioSearch
 from invenio_webhooks import InvenioWebhooks
 from invenio_webhooks.views import blueprint as webhooks_blueprint
 
@@ -76,6 +78,8 @@ Menu(app)
 Breadcrumbs(app)
 InvenioAccounts(app)
 InvenioDB(app)
+InvenioSearch(app)
+InvenioIndexer(app)
 InvenioJSONSchemas(app)
 InvenioPIDStore(app)
 InvenioRecords(app)

@@ -40,7 +40,7 @@ tests_require = [
     'pytest-cache>=1.0',
     'pytest-cov>=1.8.0',
     'pytest-pep8>=1.0.6',
-    'pytest>=2.8.0',
+    'pytest>=2.9.2',
 ]
 
 extras_require = {
@@ -62,10 +62,13 @@ setup_requires = [
 install_requires = [
     'Flask-BabelEx>=0.9.2',
     'invenio-db>=1.0.0a9',
+    'invenio-indexer>=1.0.0a6',
     'invenio-jsonschemas>=1.0.0a3',
+    'invenio-marc21>=1.0.0a3',
     'invenio-pidstore>=1.0.0a7',
     'invenio-records>=1.0.0a15',
     'invenio-records-rest>=1.0.0a15',
+    'invenio-search>=1.0.0a7',
     'invenio-webhooks>=1.0.0a2',
     'python-slugify>=1.2.0',
 ]
@@ -113,6 +116,9 @@ setup(
                          ('return', 'Return'), ('lose', 'Lose'),
                          ('return_missing', 'ReturnMissing'),
                          ('cancel', 'Cancel'), ('extend', 'Extend')]
+        ],
+        'invenio_search.mappings': [
+            'circulation = invenio_circulation.mappings',
         ],
     },
     extras_require=extras_require,

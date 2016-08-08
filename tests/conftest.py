@@ -31,6 +31,7 @@ import shutil
 import tempfile
 
 import pytest
+from elasticsearch.exceptions import RequestError
 from flask import Flask
 from flask_babelex import Babel
 from flask_breadcrumbs import Breadcrumbs
@@ -40,6 +41,7 @@ from flask_security.utils import encrypt_password
 from invenio_accounts import InvenioAccounts
 from invenio_db import db as db_
 from invenio_db import InvenioDB
+from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
 from invenio_oauth2server import InvenioOAuth2Server
 from invenio_oauth2server.models import Token
@@ -48,6 +50,7 @@ from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
+from invenio_search import InvenioSearch, current_search, current_search_client
 from invenio_webhooks import InvenioWebhooks
 from invenio_webhooks.views import blueprint as webhooks_blueprint
 from sqlalchemy_utils.functions import create_database, database_exists
@@ -80,6 +83,7 @@ def app(request):
     Breadcrumbs(app_)
     InvenioAccounts(app_)
     InvenioDB(app_)
+    InvenioIndexer(app_)
     InvenioJSONSchemas(app_)
     InvenioPIDStore(app_)
     InvenioRecords(app_)
@@ -87,6 +91,7 @@ def app(request):
     InvenioWebhooks(app_)
     InvenioOAuth2Server(app_)
     InvenioCirculation(app_)
+    InvenioSearch(app_)
 
     app_.register_blueprint(server_blueprint)
     app_.register_blueprint(settings_blueprint)
@@ -128,3 +133,16 @@ def access_token(app, db):
     db.session.commit()
 
     yield token
+
+
+@pytest.yield_fixture()
+def es(app):
+    """Elasticsearch fixture."""
+    try:
+        list(current_search.create())
+    except RequestError:
+        list(current_search.delete(ignore=[404]))
+        list(current_search.create(ignore=[400]))
+    current_search_client.indices.refresh()
+    yield current_search_client
+    list(current_search.delete(ignore=[404]))

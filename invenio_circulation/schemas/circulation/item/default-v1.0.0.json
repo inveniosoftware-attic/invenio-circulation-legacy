@@ -32,7 +32,7 @@
             "holdings":{
                "type":"array",
                "items":{
-                  "$ref":"loan_cycle-v1.0.0.json"
+                  "$ref":"../loan-cycle-v1.0.0.json"
                }
             }
          }
@@ -41,7 +41,7 @@
          "type":"object"
       },
       "location":{
-         "$ref":"location.json"
+         "$ref":"../location-v1.0.0.json"
       }
    }
 }
