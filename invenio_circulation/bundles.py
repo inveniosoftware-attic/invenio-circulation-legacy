@@ -22,25 +22,23 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-include *.rst
-include *.sh
-include *.txt
-include .dockerignore
-include .editorconfig
-include .tx/config
-include LICENSE
-include babel.ini
-include pytest.ini
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include invenio_circulation *.css
-recursive-include invenio_circulation *.html
-recursive-include invenio_circulation *.js
-recursive-include invenio_circulation *.json
-recursive-include invenio_circulation *.msg
-recursive-include invenio_circulation *.po *.pot *.mo
-recursive-include invenio_circulation *.py
-recursive-include tests *.py
+"""Bundles for Invenio-Circulation."""
+
+from flask_assets import Bundle
+from invenio_assets import NpmBundle
+
+css = Bundle(
+    'css/circulation/app.css',
+    filters='cleancss',
+    output='gen/circulation.%(version)s.css',
+)
+
+js = NpmBundle(
+    'node_modules/angular/angular.js',
+    'js/circulation/app.js',
+    filters='jsmin',
+    output='gen/circulation.%(version)s.js',
+    npm={
+        'angular': '~1.4.8',
+    }
+)

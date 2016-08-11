@@ -27,18 +27,23 @@
 
 from __future__ import absolute_import, print_function
 
+import os
 import shutil
+import subprocess
 import tempfile
 
 import pytest
+from click.testing import CliRunner
 from elasticsearch.exceptions import RequestError
 from flask import Flask
 from flask_babelex import Babel
 from flask_breadcrumbs import Breadcrumbs
-from flask_cli import FlaskCLI
+from flask_cli import FlaskCLI, ScriptInfo
 from flask_menu import Menu
 from flask_security.utils import encrypt_password
 from invenio_accounts import InvenioAccounts
+from invenio_assets import InvenioAssets
+from invenio_assets.cli import assets, collect, npm
 from invenio_db import db as db_
 from invenio_db import InvenioDB
 from invenio_indexer import InvenioIndexer
@@ -57,6 +62,8 @@ from sqlalchemy_utils.functions import create_database, database_exists
 from werkzeug.local import LocalProxy
 
 from invenio_circulation import InvenioCirculation
+from invenio_circulation.bundles import css, js
+from invenio_circulation.views.ui import blueprint as circulation_blueprint
 
 
 @pytest.yield_fixture()
@@ -96,6 +103,7 @@ def app(request):
     app_.register_blueprint(server_blueprint)
     app_.register_blueprint(settings_blueprint)
     app_.register_blueprint(webhooks_blueprint)
+    app_.register_blueprint(circulation_blueprint)
 
     with app_.app_context():
         yield app_
@@ -146,3 +154,43 @@ def es(app):
     current_search_client.indices.refresh()
     yield current_search_client
     list(current_search.delete(ignore=[404]))
+
+
+@pytest.yield_fixture()
+def build_assets(app):
+    """Get ScriptInfo object for testing CLI."""
+    InvenioAssets(app)
+    os.chdir(app.instance_path)
+
+    # Register the assets
+    _assets = app.extensions['invenio-assets']
+    _assets.env.register('invenio_circulation_css', css)
+    _assets.env.register('invenio_circulation_js', js)
+
+    # Create static directory if necessary
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    if not os.path.exists(static_dir):
+        os.makedirs(static_dir)
+
+    script_info_assets = ScriptInfo(create_app=lambda info: app)
+
+    # Run `flask npm` to create `package.json`
+    runner = CliRunner()
+    runner.invoke(npm, obj=script_info_assets)
+
+    # Run `npm install` to install the content of `package.json`
+    os.chdir(static_dir)
+    subprocess.call(['npm', 'install'])
+    os.chdir(os.path.dirname(__file__))
+
+    # Run `flask collect`
+    runner.invoke(collect, obj=script_info_assets)
+
+    # Build the bundles
+    runner.invoke(assets, ['build'], obj=script_info_assets)
+
+    yield
+
+    # Cleanup
+    os.chdir(app.instance_path)
+    shutil.rmtree(static_dir)

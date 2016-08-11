@@ -1,4 +1,5 @@
-{#
+# -*- coding: utf-8 -*-
+#
 # This file is part of Invenio.
 # Copyright (C) 2016 CERN.
 #
@@ -15,25 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with Invenio; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-#
-# In applying this license, CERN does not
-# waive the privileges and immunities granted to it by virtue of its status
-# as an Intergovernmental Organization or submit itself to any jurisdiction.
-#}
 
-{%- extends config.CIRCULATION_BASE_TEMPLATE %}
+"""Invenio-Circulation interface."""
 
-{%- block css %}
-  {{ super() }}
-  {% assets "invenio_circulation_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
-{%- endblock css %}
+from flask import Blueprint, render_template
 
-{%- block javascript %}
-  {{ super() }}
-  {% assets "invenio_circulation_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
-{%- endblock javascript %}
+blueprint = Blueprint(
+    'circulation',
+    __name__,
+    url_prefix='/circulation',
+    template_folder='../templates',
+    static_folder='../static'
+)
 
-{%- block page_body %}
-Hello, World!
-{%- endblock %}
 
+@blueprint.route('/', methods=['GET'])
+def index():
+    """Circulation index page."""
+    return render_template('invenio_circulation/index.html')

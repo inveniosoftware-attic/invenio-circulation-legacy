@@ -61,6 +61,7 @@ setup_requires = [
 
 install_requires = [
     'Flask-BabelEx>=0.9.2',
+    'invenio-assets>=1.0.0b1',
     'invenio-db>=1.0.0a9',
     'invenio-indexer>=1.0.0a6',
     'invenio-jsonschemas>=1.0.0a3',
@@ -70,6 +71,7 @@ install_requires = [
     'invenio-records-rest>=1.0.0a15',
     'invenio-search>=1.0.0a7',
     'invenio-webhooks>=1.0.0a2',
+    'jsmin>=2.2.1',
     'python-slugify>=1.2.0',
 ]
 
@@ -99,6 +101,9 @@ setup(
         'invenio_base.apps': [
             'invenio_circulation = invenio_circulation:InvenioCirculation',
         ],
+        'invenio_base.api_apps': [
+            'invenio_circulation = invenio_circulation:InvenioCirculation',
+        ],
         'invenio_i18n.translations': [
             'messages = invenio_circulation',
         ],
@@ -119,6 +124,13 @@ setup(
         ],
         'invenio_search.mappings': [
             'circulation = invenio_circulation.mappings',
+        ],
+        'invenio_assets.bundles': [
+            'invenio_circulation_css = invenio_circulation.bundles:css',
+            'invenio_circulation_js = invenio_circulation.bundles:js',
+        ],
+        'invenio_base.blueprints': [
+            'circulation = invenio_circulation.views.ui:blueprint'
         ],
     },
     extras_require=extras_require,

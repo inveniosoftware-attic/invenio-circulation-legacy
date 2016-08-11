@@ -43,6 +43,7 @@ from flask_breadcrumbs import Breadcrumbs
 from flask_cli import FlaskCLI
 from flask_menu import Menu
 from invenio_accounts import InvenioAccounts
+from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB
 from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
@@ -57,6 +58,7 @@ from invenio_webhooks import InvenioWebhooks
 from invenio_webhooks.views import blueprint as webhooks_blueprint
 
 from invenio_circulation import InvenioCirculation
+from invenio_circulation.views.ui import blueprint as circulation_blueprint
 
 # Create Flask application
 app = Flask(__name__)
@@ -69,7 +71,6 @@ app.config.update(
     OAUTH2SERVER_CLIENT_SECRET_SALT_LEN=60,
     OAUTH2SERVER_TOKEN_PERSONAL_SALT_LEN=60,
     SECRET_KEY='changeme',
-    SERVER_NAME='localhost:5000',
 )
 
 Babel(app)
@@ -77,6 +78,7 @@ FlaskCLI(app)
 Menu(app)
 Breadcrumbs(app)
 InvenioAccounts(app)
+InvenioAssets(app)
 InvenioDB(app)
 InvenioSearch(app)
 InvenioIndexer(app)
@@ -91,3 +93,4 @@ InvenioCirculation(app)
 app.register_blueprint(server_blueprint)
 app.register_blueprint(settings_blueprint)
 app.register_blueprint(webhooks_blueprint)
+app.register_blueprint(circulation_blueprint)
