@@ -27,6 +27,7 @@
 from __future__ import absolute_import, print_function
 
 from . import config
+from .views import rest
 
 
 class InvenioCirculation(object):
@@ -52,3 +53,15 @@ class InvenioCirculation(object):
         for k in dir(config):
             if k.startswith('CIRCULATION_'):
                 app.config.setdefault(k, getattr(config, k))
+
+
+class InvenioCirculationREST(InvenioCirculation):
+    """Invenio-Circulation extension."""
+
+    def init_app(self, app):
+        """Flask application initialization."""
+        self.init_config(app)
+        app.register_blueprint(rest.create_blueprint(
+            app.config['CIRCULATION_REST_ENDPOINTS']
+        ))
+        app.extensions['invenio-circulation-rest'] = self

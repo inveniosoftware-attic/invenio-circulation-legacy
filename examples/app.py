@@ -57,7 +57,7 @@ from invenio_search import InvenioSearch
 from invenio_webhooks import InvenioWebhooks
 from invenio_webhooks.views import blueprint as webhooks_blueprint
 
-from invenio_circulation import InvenioCirculation
+from invenio_circulation import InvenioCirculation, InvenioCirculationREST
 from invenio_circulation.views.ui import blueprint as circulation_blueprint
 
 # Create Flask application
@@ -89,6 +89,7 @@ InvenioRecordsREST(app)
 InvenioWebhooks(app)
 InvenioOAuth2Server(app)
 InvenioCirculation(app)
+InvenioCirculationREST(app)
 
 app.register_blueprint(server_blueprint)
 app.register_blueprint(settings_blueprint)

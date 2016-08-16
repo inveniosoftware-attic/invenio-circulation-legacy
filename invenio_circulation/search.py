@@ -34,3 +34,4 @@ class ItemSearch(RecordsSearch):
         """Configuration for circulation search."""
 
         index = 'circulation-item'
+        doc_types = None

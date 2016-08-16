@@ -61,7 +61,7 @@ from invenio_webhooks.views import blueprint as webhooks_blueprint
 from sqlalchemy_utils.functions import create_database, database_exists
 from werkzeug.local import LocalProxy
 
-from invenio_circulation import InvenioCirculation
+from invenio_circulation import InvenioCirculation, InvenioCirculationREST
 from invenio_circulation.bundles import css, js
 from invenio_circulation.views.ui import blueprint as circulation_blueprint
 
@@ -98,6 +98,7 @@ def app(request):
     InvenioWebhooks(app_)
     InvenioOAuth2Server(app_)
     InvenioCirculation(app_)
+    InvenioCirculationREST(app_)
     InvenioSearch(app_)
 
     app_.register_blueprint(server_blueprint)

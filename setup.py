@@ -102,7 +102,8 @@ setup(
             'invenio_circulation = invenio_circulation:InvenioCirculation',
         ],
         'invenio_base.api_apps': [
-            'invenio_circulation = invenio_circulation:InvenioCirculation',
+            'invenio_circulation_rest'
+            ' = invenio_circulation:InvenioCirculationREST',
         ],
         'invenio_i18n.translations': [
             'messages = invenio_circulation',
