@@ -111,6 +111,10 @@ setup(
             '{0} = invenio_circulation.minters:{0}_minter'.format(x)
             for x in ['circulation_item', 'circulation_location']
         ],
+        'invenio_pidstore.fetchers': [
+            '{0} = invenio_circulation.fetchers:{0}_fetcher'.format(x)
+            for x in ['circulation_item']
+        ],
         'invenio_jsonschemas.schemas': [
             'circulation = invenio_circulation.schemas',
         ],
