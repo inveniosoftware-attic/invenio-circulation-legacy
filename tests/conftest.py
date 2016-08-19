@@ -36,9 +36,9 @@ import pytest
 from click.testing import CliRunner
 from elasticsearch.exceptions import RequestError
 from flask import Flask
+from flask.cli import ScriptInfo
 from flask_babelex import Babel
 from flask_breadcrumbs import Breadcrumbs
-from flask_cli import FlaskCLI, ScriptInfo
 from flask_menu import Menu
 from flask_security.utils import encrypt_password
 from invenio_accounts import InvenioAccounts
@@ -85,7 +85,6 @@ def app(request):
     app_.url_map.converters['pid'] = PIDConverter
 
     Babel(app_)
-    FlaskCLI(app_)
     Menu(app_)
     Breadcrumbs(app_)
     InvenioAccounts(app_)

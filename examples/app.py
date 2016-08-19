@@ -40,7 +40,6 @@ import os
 from flask import Flask
 from flask_babelex import Babel
 from flask_breadcrumbs import Breadcrumbs
-from flask_cli import FlaskCLI
 from flask_menu import Menu
 from invenio_accounts import InvenioAccounts
 from invenio_assets import InvenioAssets
@@ -74,7 +73,6 @@ app.config.update(
 )
 
 Babel(app)
-FlaskCLI(app)
 Menu(app)
 Breadcrumbs(app)
 InvenioAccounts(app)

@@ -29,7 +29,6 @@ from __future__ import absolute_import, print_function
 
 import pytest
 from flask import Flask
-from flask_cli import FlaskCLI
 from invenio_records_rest.utils import PIDConverter
 
 from invenio_circulation import InvenioCirculation
@@ -45,13 +44,11 @@ def test_version():
 def test_init():
     """Test extension initialization."""
     app = Flask('testapp')
-    FlaskCLI(app)
     app.url_map.converters['pid'] = PIDConverter
     ext = InvenioCirculation(app)
     assert 'invenio-circulation' in app.extensions
 
     app = Flask('testapp')
-    FlaskCLI(app)
     app.url_map.converters['pid'] = PIDConverter
 
     ext = InvenioCirculation()
