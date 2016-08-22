@@ -37,13 +37,14 @@ from click.testing import CliRunner
 from elasticsearch.exceptions import RequestError
 from flask import Flask
 from flask.cli import ScriptInfo
+from flask_assets import assets
 from flask_babelex import Babel
 from flask_breadcrumbs import Breadcrumbs
 from flask_menu import Menu
 from flask_security.utils import encrypt_password
 from invenio_accounts import InvenioAccounts
 from invenio_assets import InvenioAssets
-from invenio_assets.cli import assets, collect, npm
+from invenio_assets.cli import collect, npm
 from invenio_db import db as db_
 from invenio_db import InvenioDB
 from invenio_indexer import InvenioIndexer

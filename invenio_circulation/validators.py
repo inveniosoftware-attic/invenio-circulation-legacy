@@ -80,7 +80,13 @@ class UUIDField(fields.UUID):
         return super(UUIDField, self)._deserialize(value, attr, data)
 
 
-class LoanArgument(Schema):
+class BaseSchema(Schema):
+    """Marshmallow base schema class."""
+
+    dry_run = fields.Boolean(load_only=True)
+
+
+class LoanArgument(BaseSchema):
     """Marshmallow Schema class to validate Item.loan_item arguments."""
 
     start_date = DateField(default=lambda: _today().isoformat())
@@ -100,13 +106,13 @@ class RequestArgument(LoanArgument):
     """Marshmallow Schema class to validate Item.loan_item arguments."""
 
 
-class CancelArgument(Schema):
+class CancelArgument(BaseSchema):
     """Marshmallow Schema class to validate Item.loan_item arguments."""
 
     hold_id = UUIDField(required=True)
 
 
-class ExtensionArgument(Schema):
+class ExtensionArgument(BaseSchema):
     """Marshmallow Schema class to validate Item.loan_item arguments."""
 
     requested_end_date = DateField(default=_max_loan_duration)
@@ -211,7 +217,7 @@ class RequestItemSchema(ArgumentDurationMixin, ArgumentHoldingMixin,
             raise ValidationError('The item is currently missing.')
 
 
-class ReturnItemSchema(Schema):
+class ReturnItemSchema(BaseSchema):
     """Marshmallow Schema class to validate return_item arguments."""
 
     @validates_schema
@@ -232,7 +238,7 @@ class ReturnItemSchema(Schema):
             raise ValidationError('There is no active loan.')
 
 
-class ReturnMissingItemSchema(Schema):
+class ReturnMissingItemSchema(BaseSchema):
     """Marshmallow Schema class to validate return_missing_item arguments."""
 
     @validates_schema

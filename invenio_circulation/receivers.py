@@ -29,12 +29,15 @@ from invenio_db import db
 from invenio_webhooks.models import Receiver
 
 from .api import Item
-from .validators import CancelItemSchema, ExtendItemSchema, LoanItemSchema, \
-    RequestItemSchema, ReturnItemSchema, ReturnMissingItemSchema
+from .validators import BaseSchema, CancelItemSchema, ExtendItemSchema, \
+    LoanItemSchema, RequestItemSchema, ReturnItemSchema, \
+    ReturnMissingItemSchema
 
 
 class ReceiverBase(Receiver):
     """Reciever base class to handle incoming circulation requests."""
+
+    circulation_event_schema = BaseSchema()
 
     def run(self, event):
         """Process the circulation event.
@@ -43,18 +46,20 @@ class ReceiverBase(Receiver):
         in a nested transaction.
         """
         item = Item.get_record(event.payload['item_id'])
-        if hasattr(self, 'circulation_event_schema'):
-            self.circulation_event_schema.context['item'] = item
-            data, errors = self.circulation_event_schema.load(event.payload)
-            if errors:
-                event.response_code = 400
-                event.response = {'message': errors}
-                return
-            data, _ = self.circulation_event_schema.dump(data)
-        else:
-            data = event.payload
+        self.circulation_event_schema.context['item'] = item
+
+        data, errors = self.circulation_event_schema.load(event.payload)
+        if errors:
+            event.response_code = 400
+            event.response = {'message': errors}
+            return
+
+        if data.get('dry_run'):
+            event.response_code = 204
+            return
 
         with db.session.begin_nested():
+            data, _ = self.circulation_event_schema.dump(data)
             self._run(item, data)
             item.commit()
 

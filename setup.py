@@ -62,7 +62,7 @@ setup_requires = [
 install_requires = [
     'Flask-BabelEx>=0.9.2',
     'Flask>=0.11.1',
-    'invenio-assets>=1.0.0b1',
+    'invenio-assets>=1.0.0b2',
     'invenio-db>=1.0.0b1',
     'invenio-indexer>=1.0.0a6',
     'invenio-jsonschemas>=1.0.0a3',
@@ -126,7 +126,8 @@ setup(
             for x, y in [('loan', 'Loan'), ('request', 'Request'),
                          ('return', 'Return'), ('lose', 'Lose'),
                          ('return_missing', 'ReturnMissing'),
-                         ('cancel', 'Cancel'), ('extend', 'Extend')]
+                         ('cancel', 'Cancel'), ('extend', 'Extend'),
+                         ]
         ],
         'invenio_search.mappings': [
             'circulation = invenio_circulation.mappings',

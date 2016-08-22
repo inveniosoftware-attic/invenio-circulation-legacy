@@ -179,3 +179,42 @@ def test_extend_receiver(app, db, access_token):
 
             item = Item.get_record(item.id)
             assert item['_circulation']['status'] == ItemStatus.ON_LOAN
+
+
+def test_dry_run(app, db, access_token):
+    """Use the webhooks api to loan and return an item."""
+    item = Item.create({})
+    db.session.commit()
+    with app.test_request_context():
+        with app.test_client() as client:
+            # Successful request
+            url = url_for('invenio_webhooks.event_list',
+                          receiver_id='circulation_loan')
+            url += '?access_token=' + access_token
+            data = {
+                'item_id': str(item.id),
+                'dry_run': True
+            }
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
+
+            assert res.status_code == 204
+
+            item = Item.get_record(item.id)
+            assert item['_circulation']['status'] == ItemStatus.ON_SHELF
+            assert len(item['_circulation']['holdings']) == 0
+
+            # Invalid request
+            url = url_for('invenio_webhooks.event_list',
+                          receiver_id='circulation_loan')
+            url += '?access_token=' + access_token
+            yesterday = datetime.date.today() + datetime.timedelta(days=-1)
+            data = {
+                'item_id': str(item.id),
+                'start_date': str(yesterday),
+                'dry_run': True
+            }
+            res = client.post(url, data=json.dumps(data),
+                              content_type='application/json')
+
+            assert res.status_code == 400
