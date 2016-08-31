@@ -26,6 +26,7 @@
 """Circulation webhooks."""
 
 from invenio_db import db
+from invenio_pidstore.resolver import Resolver
 from invenio_webhooks.models import Receiver
 
 from .api import Item
@@ -45,7 +46,10 @@ class ReceiverBase(Receiver):
         This method builds the frame, fetching the item and calling *_run*
         in a nested transaction.
         """
-        item = Item.get_record(event.payload['item_id'])
+        resolver = Resolver(pid_type='crcitm', object_type='rec',
+                            getter=Item.get_record)
+        _, item = resolver.resolve(event.payload['item_id'])
+
         self.circulation_event_schema.context['item'] = item
 
         data, errors = self.circulation_event_schema.load(event.payload)

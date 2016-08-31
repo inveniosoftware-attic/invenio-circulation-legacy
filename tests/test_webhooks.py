@@ -27,24 +27,31 @@
 
 import datetime
 import json
+import uuid
 
 from flask import url_for
 
 from invenio_circulation.api import Item
+from invenio_circulation.minters import circulation_item_minter
 from invenio_circulation.models import ItemStatus
 
 
 def test_receiver_base(app, db, access_token):
     """Test ReceiverBase failure behavior."""
-    item = Item.create({})
-    db.session.commit()
+    item_uuid = uuid.uuid4()
+    item_data = {}
+    pid = circulation_item_minter(item_uuid, item_data)
+    item = Item.create(item_data, id_=item_uuid)
     with app.test_request_context():
         with app.test_client() as client:
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_loan')
             url += '?access_token=' + access_token
             yesterday = datetime.date.today() + datetime.timedelta(days=-1)
-            data = {'item_id': str(item.id), 'start_date': str(yesterday)}
+            data = {
+                'item_id': pid.pid_value,
+                'start_date': str(yesterday),
+            }
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -53,14 +60,16 @@ def test_receiver_base(app, db, access_token):
 
 def test_loan_return_receiver(app, db, access_token):
     """Use the webhooks api to loan and return an item."""
-    item = Item.create({})
-    db.session.commit()
+    item_uuid = uuid.uuid4()
+    item_data = {}
+    pid = circulation_item_minter(item_uuid, item_data)
+    item = Item.create(item_data, id_=item_uuid)
     with app.test_request_context():
         with app.test_client() as client:
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_loan')
             url += '?access_token=' + access_token
-            data = {'item_id': str(item.id)}
+            data = {'item_id': pid.pid_value}
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -73,7 +82,7 @@ def test_loan_return_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_return')
             url += '?access_token=' + access_token
-            data = {'item_id': str(item.id)}
+            data = {'item_id': pid.pid_value}
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -86,14 +95,16 @@ def test_loan_return_receiver(app, db, access_token):
 
 def test_request_cancel_receiver(app, db, access_token):
     """Use the webhooks api to request and cancel an item."""
-    item = Item.create({})
-    db.session.commit()
+    item_uuid = uuid.uuid4()
+    item_data = {}
+    pid = circulation_item_minter(item_uuid, item_data)
+    item = Item.create(item_data, id_=item_uuid)
     with app.test_request_context():
         with app.test_client() as client:
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_request')
             url += '?access_token=' + access_token
-            data = {'item_id': str(item.id)}
+            data = {'item_id': pid.pid_value}
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -107,7 +118,10 @@ def test_request_cancel_receiver(app, db, access_token):
                           receiver_id='circulation_cancel')
             url += '?access_token=' + access_token
             hold_id = item['_circulation']['holdings'][0]['id']
-            data = {'item_id': str(item.id), 'hold_id': hold_id}
+            data = {
+                'item_id': pid.pid_value,
+                'hold_id': hold_id,
+            }
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -120,14 +134,16 @@ def test_request_cancel_receiver(app, db, access_token):
 
 def test_lose_return_missing_receiver(app, db, access_token):
     """Use the webhooks api to lose and return an item."""
-    item = Item.create({})
-    db.session.commit()
+    item_uuid = uuid.uuid4()
+    item_data = {}
+    pid = circulation_item_minter(item_uuid, item_data)
+    item = Item.create(item_data, id_=item_uuid)
     with app.test_request_context():
         with app.test_client() as client:
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_lose')
             url += '?access_token=' + access_token
-            data = {'item_id': str(item.id)}
+            data = {'item_id': pid.pid_value}
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -139,7 +155,7 @@ def test_lose_return_missing_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_return_missing')
             url += '?access_token=' + access_token
-            data = {'item_id': str(item.id)}
+            data = {'item_id': pid.pid_value}
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -151,14 +167,16 @@ def test_lose_return_missing_receiver(app, db, access_token):
 
 def test_extend_receiver(app, db, access_token):
     """Use the webhooks api to an item loan."""
-    item = Item.create({})
-    db.session.commit()
+    item_uuid = uuid.uuid4()
+    item_data = {}
+    pid = circulation_item_minter(item_uuid, item_data)
+    item = Item.create(item_data, id_=item_uuid)
     with app.test_request_context():
         with app.test_client() as client:
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_loan')
             url += '?access_token=' + access_token
-            data = {'item_id': str(item.id)}
+            data = {'item_id': pid.pid_value}
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -170,8 +188,10 @@ def test_extend_receiver(app, db, access_token):
             url = url_for('invenio_webhooks.event_list',
                           receiver_id='circulation_extend')
             url += '?access_token=' + access_token
-            data = {'item_id': str(item.id),
-                    'requested_end_date': datetime.date.today().isoformat()}
+            data = {
+                'item_id': pid.pid_value,
+                'requested_end_date': datetime.date.today().isoformat(),
+            }
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
 
@@ -183,8 +203,10 @@ def test_extend_receiver(app, db, access_token):
 
 def test_dry_run(app, db, access_token):
     """Use the webhooks api to loan and return an item."""
-    item = Item.create({})
-    db.session.commit()
+    item_uuid = uuid.uuid4()
+    item_data = {}
+    pid = circulation_item_minter(item_uuid, item_data)
+    item = Item.create(item_data, id_=item_uuid)
     with app.test_request_context():
         with app.test_client() as client:
             # Successful request
@@ -192,8 +214,8 @@ def test_dry_run(app, db, access_token):
                           receiver_id='circulation_loan')
             url += '?access_token=' + access_token
             data = {
-                'item_id': str(item.id),
-                'dry_run': True
+                'item_id': pid.pid_value,
+                'dry_run': True,
             }
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
@@ -210,9 +232,9 @@ def test_dry_run(app, db, access_token):
             url += '?access_token=' + access_token
             yesterday = datetime.date.today() + datetime.timedelta(days=-1)
             data = {
-                'item_id': str(item.id),
+                'item_id': pid.pid_value,
                 'start_date': str(yesterday),
-                'dry_run': True
+                'dry_run': True,
             }
             res = client.post(url, data=json.dumps(data),
                               content_type='application/json')
