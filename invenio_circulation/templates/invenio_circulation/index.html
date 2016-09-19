@@ -34,6 +34,19 @@
 {%- endblock javascript %}
 
 {%- block page_body %}
-Hello, World!
+<div id="invenio-search">
+  <invenio-search search-endpoint="{{ config.CIRCULATION_ITEM_SEARCH_API }}">
+
+    <invenio-search-bar
+     template="{{ url_for('static', filename='templates/invenio_circulation/searchbar.html') }}"
+     placeholder="{{ _('Search items') }}">
+    </invenio-search-bar>
+
+    <invenio-search-results
+     template="{{ url_for('static', filename='templates/invenio_circulation/results.html') }}">
+    </invenio-search-results>
+
+  </invenio-search>
+</div>
 {%- endblock %}
 

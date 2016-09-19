@@ -34,11 +34,15 @@ css = Bundle(
 )
 
 js = NpmBundle(
+    'node_modules/requirejs/require.js',
     'node_modules/angular/angular.js',
+    'node_modules/invenio-search-js/dist/invenio-search-js.js',
     'js/circulation/app.js',
-    filters='jsmin',
+    filters='requirejs',
     output='gen/circulation.%(version)s.js',
     npm={
+        'requirejs': '~2.3.1',
         'angular': '~1.4.8',
+        'invenio-search-js': '~0.2.0',
     }
 )

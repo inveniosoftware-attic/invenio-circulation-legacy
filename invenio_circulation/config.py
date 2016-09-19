@@ -53,3 +53,6 @@ CIRCULATION_REST_ENDPOINTS = {
     }
 }
 """Basic REST circulation configuration."""
+
+CIRCULATION_ITEM_SEARCH_API = '/circulation/items/'
+"""Configure the item search engine endpoint."""

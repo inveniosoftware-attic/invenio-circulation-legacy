@@ -89,6 +89,7 @@ def app(request):
     Menu(app_)
     Breadcrumbs(app_)
     InvenioAccounts(app_)
+    InvenioAssets(app_)
     InvenioDB(app_)
     InvenioIndexer(app_)
     InvenioJSONSchemas(app_)
@@ -160,7 +161,6 @@ def es(app):
 @pytest.yield_fixture()
 def build_assets(app):
     """Get ScriptInfo object for testing CLI."""
-    InvenioAssets(app)
     os.chdir(app.instance_path)
 
     # Register the assets

@@ -21,9 +21,17 @@
  * as an Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-(function (angular) {
-  // Bootstrap it!
-  angular.element(document).ready(function() {
-      alert('Hello, World!');
-  });
-})(angular);
+
+require([
+    'node_modules/angular/angular.js',
+    'node_modules/invenio-search-js/dist/invenio-search-js'
+  ], function() {
+    // When the DOM is ready bootstrap the `invenio-search-js`
+    angular.element(document).ready(function() {
+      angular.bootstrap(
+        document.getElementById("invenio-search"), [
+          'invenioSearch'
+        ]
+      );
+    });
+});

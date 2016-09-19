@@ -40,8 +40,9 @@ services:
 
 
 env:
-  - REQUIREMENTS=lowest ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
-  - REQUIREMENTS=release ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
+  # TODO: comment in once invenio-accounts-rest is on pypi
+  # - REQUIREMENTS=lowest ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
+  # - REQUIREMENTS=release ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
   - REQUIREMENTS=devel ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
 
 python:
@@ -55,16 +56,18 @@ before_install:
   - "sleep 30"
   - "travis_retry pip install --upgrade pip setuptools py"
   - "travis_retry pip install twine wheel coveralls requirements-builder"
-  - "requirements-builder -e all --level=min setup.py > .travis-lowest-requirements.txt"
-  - "requirements-builder -e all --level=pypi setup.py > .travis-release-requirements.txt"
+  # TODO: comment in once invenio-accounts-rest is on pypi
+  # - "requirements-builder -e all --level=min setup.py > .travis-lowest-requirements.txt"
+  # - "requirements-builder -e all --level=pypi setup.py > .travis-release-requirements.txt"
   - "requirements-builder -e all --level=dev --req requirements-devel.txt setup.py > .travis-devel-requirements.txt"
-  - "travis_retry npm install -g clean-css jsmin"
   - "mysql -e 'CREATE DATABASE IF NOT EXISTS invenio;' -uroot"
   - "psql -c 'CREATE DATABASE invenio;' -U postgres"
 
 install:
   - "travis_retry pip install -r .travis-${REQUIREMENTS}-requirements.txt"
   - "travis_retry pip install -e .[all]"
+  - "travis_retry npm update"
+  - "travis_retry npm install -g clean-css jsmin requirejs"
 
 script:
   - "./run-tests.sh"
