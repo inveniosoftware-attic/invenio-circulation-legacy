@@ -24,7 +24,7 @@ Installation
 Documentation
 -------------
 
-   http://pythonhosted.org/invenio-circulation/
+   http://invenio-circulation.readthedocs.io/
 
 Happy hacking and thanks for flying Invenio-Circulation.
 
