@@ -47,6 +47,12 @@
     </invenio-search-results>
 
   </invenio-search>
+
+  <circulation-user-search
+   user-search-endpoint="'{{ config.CIRCULATION_USER_SEARCH_API }}'"
+   template="{{ url_for('static', filename='templates/invenio_circulation/circulation-user-search.html') }}">
+  </circulation-user-search>
+
 </div>
 {%- endblock %}
 

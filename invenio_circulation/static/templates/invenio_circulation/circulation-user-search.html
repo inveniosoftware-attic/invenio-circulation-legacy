@@ -1,0 +1,7 @@
+<input type="text" 
+       ng-model="selected"
+       uib-typeahead="user for user in getUser($viewValue) | limitTo:8"
+       typeahead-on-select="onSelect($item)"
+       typeahead-popup-template-url="static/templates/invenio_circulation/typeahead-popup.html"
+       typeahead-template-url="static/templates/invenio_circulation/typeahead-match.html"
+       class="form-control">

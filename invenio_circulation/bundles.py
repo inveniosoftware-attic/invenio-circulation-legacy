@@ -28,6 +28,7 @@ from flask_assets import Bundle
 from invenio_assets import NpmBundle
 
 css = Bundle(
+    'node_modules/angular-ui-bootstrap/dist/ui-bootstrap-csp.css',
     'css/circulation/app.css',
     filters='cleancss',
     output='gen/circulation.%(version)s.css',
@@ -37,12 +38,15 @@ js = NpmBundle(
     'node_modules/requirejs/require.js',
     'node_modules/angular/angular.js',
     'node_modules/invenio-search-js/dist/invenio-search-js.js',
+    'node_modules/angular-ui-bootstrap/dist/ui-bootstrap.js',
     'js/circulation/app.js',
+    'js/circulation/directives/circulationUserSearch.js',
     filters='requirejs',
     output='gen/circulation.%(version)s.js',
     npm={
         'requirejs': '~2.3.1',
         'angular': '~1.4.8',
+        'angular-ui-bootstrap': '~2.1.4',
         'invenio-search-js': '~0.2.0',
     }
 )

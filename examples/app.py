@@ -42,6 +42,8 @@ from flask_babelex import Babel
 from flask_breadcrumbs import Breadcrumbs
 from flask_menu import Menu
 from invenio_accounts import InvenioAccounts
+from invenio_accounts.views import blueprint as accounts_blueprint
+from invenio_accounts_rest import InvenioAccountsREST
 from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB
 from invenio_indexer import InvenioIndexer
@@ -76,6 +78,7 @@ Babel(app)
 Menu(app)
 Breadcrumbs(app)
 InvenioAccounts(app)
+InvenioAccountsREST(app)
 InvenioAssets(app)
 InvenioDB(app)
 InvenioSearch(app)
@@ -90,6 +93,7 @@ InvenioCirculation(app)
 InvenioCirculationREST(app)
 
 app.register_blueprint(server_blueprint)
+app.register_blueprint(accounts_blueprint)
 app.register_blueprint(settings_blueprint)
 app.register_blueprint(webhooks_blueprint)
 app.register_blueprint(circulation_blueprint)

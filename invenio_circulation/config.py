@@ -56,3 +56,6 @@ CIRCULATION_REST_ENDPOINTS = {
 
 CIRCULATION_ITEM_SEARCH_API = '/circulation/items/'
 """Configure the item search engine endpoint."""
+
+CIRCULATION_USER_SEARCH_API = '/users/'
+"""Configure the user search engine endpoint."""

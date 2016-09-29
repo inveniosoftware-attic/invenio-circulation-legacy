@@ -22,17 +22,45 @@
  */
 
 
-require([
-    'node_modules/angular/angular.js',
-    'node_modules/invenio-search-js/dist/invenio-search-js',
-    'js/circulation/directives/circulationUserSearch',
-  ], function() {
-    // When the DOM is ready bootstrap the `invenio-search-js`
-    angular.element(document).ready(function() {
-      angular.bootstrap(
-        document.getElementById("invenio-search"), [
-          'invenioSearch', 'circulationUserSearch'
-        ]
-      );
-    });
-});
+(function (angular) {
+  // Setup
+  angular
+    .module('circulationUserSearch', ['ui.bootstrap'])
+    .directive('circulationUserSearch', circulationUserSearch);
+
+  circulationUserSearch.$inject = ['$http']
+
+  function circulationUserSearch($http) {
+    var directive = {
+      link: link,
+      scope: {
+        userSearchEndpoint: '=',
+      },
+      templateUrl: templateUrl,
+    };
+
+    return directive;
+
+    function link(scope, element, attributes) {
+      scope.getUser = function(query) {
+        return $http({
+          method: 'GET',
+          url: scope.userSearchEndpoint,
+          params: {q: query},
+        }).then(function(response) {
+          return response.data.map(function(user){
+            return user
+          });
+        });
+      }
+
+      scope.onSelect = function(item) {
+        scope.selected = item.email;
+      }
+    }
+
+    function templateUrl(element, attrs) {
+      return attrs.template;
+    }
+  }
+})(angular);
