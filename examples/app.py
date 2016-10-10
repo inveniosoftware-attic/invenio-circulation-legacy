@@ -72,6 +72,12 @@ app.config.update(
     OAUTH2SERVER_CLIENT_SECRET_SALT_LEN=60,
     OAUTH2SERVER_TOKEN_PERSONAL_SALT_LEN=60,
     SECRET_KEY='changeme',
+    CIRCULATION_ACTION_LOAN_URL=(
+        '/hooks/receivers/circulation_loan/events/'),
+    CIRCULATION_ACTION_REQUEST_URL=(
+        '/hooks/receivers/circulation_request/events/'),
+    CIRCULATION_ACTION_RETURN_URL=(
+        '/hooks/receivers/circulation_return/events/'),
 )
 
 Babel(app)

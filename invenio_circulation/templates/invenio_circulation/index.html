@@ -53,6 +53,13 @@
    template="{{ url_for('static', filename='templates/invenio_circulation/circulation-user-search.html') }}">
   </circulation-user-search>
 
+  <circulation-item-basket
+   loan-endpoint="{{ config.CIRCULATION_ACTION_LOAN_URL }}"
+   request-endpoint="{{ config.CIRCULATION_ACTION_REQUEST_URL }}"
+   return-endpoint="{{ config.CIRCULATION_ACTION_RETURN_URL }}"
+   template="{{ url_for('static', filename='templates/invenio_circulation/circulation-item-basket.html') }}">
+  </circulation-item-basket>
+
 </div>
 {%- endblock %}
 

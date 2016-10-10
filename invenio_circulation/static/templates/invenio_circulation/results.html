@@ -1,5 +1,9 @@
 <ul>
   <li ng-repeat="record in vm.invenioSearchResults.hits.hits track by $index">
     <h5>{{ record.metadata.control_number }}: {{ record.metadata.title_statement.title }}</h5>
+    <circulation-add-item
+     item="record"
+     template="static/templates/invenio_circulation/circulation-add-item.html">
+    </circulation-add-item>
   </li>
 </ul>

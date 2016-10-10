@@ -1,0 +1,7 @@
+<ul>
+  <li ng-repeat="item in items">
+    <h5>{{ item.metadata.control_number }}: {{ item.metadata.title_statement.title }}</h5><button ng-click="remove($index)">Remove</button>
+  </li>
+</ul>
+
+<button ng-click="loan()">Loan items</button><button ng-click="request()">Request items</button><button ng-click="return()">Return items</button>

@@ -40,7 +40,12 @@ js = NpmBundle(
     'node_modules/invenio-search-js/dist/invenio-search-js.js',
     'node_modules/angular-ui-bootstrap/dist/ui-bootstrap.js',
     'js/circulation/app.js',
+    'js/circulation/circulationItemBasket.js',
     'js/circulation/directives/circulationUserSearch.js',
+    'js/circulation/directives/circulationAddItem.js',
+    'js/circulation/directives/circulationItemBasket.js',
+    'js/circulation/factories/circulationItemStore.js',
+    'js/circulation/factories/circulationUserStore.js',
     filters='requirejs',
     output='gen/circulation.%(version)s.js',
     npm={

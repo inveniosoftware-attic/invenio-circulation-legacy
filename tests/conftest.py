@@ -81,6 +81,12 @@ def app(request):
         SERVER_NAME='localhost:5000',
         REPLACE_REFS=False,
         TESTING=True,
+        CIRCULATION_ACTION_LOAN_URL=(
+            '/hooks/receivers/circulation_loan/events/'),
+        CIRCULATION_ACTION_REQUEST_URL=(
+            '/hooks/receivers/circulation_request/events/'),
+        CIRCULATION_ACTION_RETURN_URL=(
+            '/hooks/receivers/circulation_return/events/'),
     )
 
     app_.url_map.converters['pid'] = PIDConverter
