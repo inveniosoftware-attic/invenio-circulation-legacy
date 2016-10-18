@@ -23,6 +23,28 @@
 
 
 (function (angular) {
-  angular.module('circulationItemBasket',
-    ['circulationUserSearch', 'circulationSettings']);
+  // Setup
+  angular
+    .module('circulationSettings')
+    .directive('circulationSettings', circulationSettings);
+
+  circulationSettings.$inject = ['circulationSettingsStore'];
+
+  function circulationSettings(circulationSettingsStore) {
+    var directive = {
+      link: link,
+      scope: true,
+      templateUrl: templateUrl,
+    };
+
+    return directive;
+
+    function link(scope, element, attributes) {
+      scope.settings = circulationSettingsStore.settings;
+    }
+
+    function templateUrl(element, attrs) {
+      return attrs.template;
+    }
+  }
 })(angular);

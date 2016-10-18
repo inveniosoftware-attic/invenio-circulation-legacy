@@ -32,12 +32,14 @@
     '$http',
     'circulationItemStore',
     'circulationUserStore',
+    'circulationSettingsStore',
   ];
 
   function circulationItemBasket(
       $http, 
       circulationItemStore,
-      circulationUserStore
+      circulationUserStore,
+      circulationSettingsStore
   ) {
     var directive = {
       link: link,
@@ -74,6 +76,7 @@
       angular.forEach(circulationItemStore.items, function(item, index) {
         var send_data = angular.copy(data);
         send_data.item_id = item.id;
+        angular.extend(send_data, circulationSettingsStore.getPayload());
 
         $http({
           method: 'POST',

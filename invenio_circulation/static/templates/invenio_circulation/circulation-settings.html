@@ -1,0 +1,11 @@
+<div>
+  Start Date:<input type="text" ng-model="settings.startDate">
+  End Date:<input type="text" ng-model="settings.endDate">
+  Delivery:
+  <select ng-model="settings.selectedDelivery">
+    <option value="{{ settings.delivery[0] }}">{{ settings.delivery[0] }}</option>
+    <option value="{{ settings.delivery[1] }}">{{ settings.delivery[1] }}</option>
+  </select>
+  Waitlist:
+  <input type="checkbox" ng-model="settings.waitlist">
+</div>

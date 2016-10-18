@@ -23,6 +23,42 @@
 
 
 (function (angular) {
-  angular.module('circulationItemBasket',
-    ['circulationUserSearch', 'circulationSettings']);
+  // Setup
+  angular
+    .module('circulationSettings')
+    .factory('circulationSettingsStore', circulationSettingsStore);
+
+  function circulationSettingsStore() {
+    var settings = {
+      startDate: '',
+      endDate: '',
+      delivery: ['mail', 'pickup'],
+      selectedDelivery: 'mail',
+      waitlist: false,
+    };
+
+    var service = {
+      settings: settings,
+      getPayload: getPayload,
+    };
+
+    return service;
+
+    function getPayload() {
+      var data = {
+        'start_date': settings.startDate,
+        'end_date': settings.endDate,
+        'delivery': settings.selectedDelivery,
+        'waitlist': settings.waitlist,
+      }
+
+      angular.forEach(data, function(value, key) {
+        if (value == '' || value == null) {
+          delete data[key];
+        }
+      });
+
+      return data;
+    }
+  }
 })(angular);

@@ -27,12 +27,14 @@ require([
     'node_modules/invenio-search-js/dist/invenio-search-js',
     'js/circulation/circulationUserSearch',
     'js/circulation/circulationItemBasket',
+    'js/circulation/circulationSettings',
   ], function() {
     // When the DOM is ready bootstrap the `invenio-search-js`
     angular.element(document).ready(function() {
       angular.bootstrap(
         document.getElementById("invenio-search"), [
           'invenioSearch', 'circulationUserSearch', 'circulationItemBasket',
+          'circulationSettings'
         ]
       );
     });

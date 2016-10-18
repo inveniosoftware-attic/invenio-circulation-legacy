@@ -23,6 +23,5 @@
 
 
 (function (angular) {
-  angular.module('circulationItemBasket',
-    ['circulationUserSearch', 'circulationSettings']);
+  angular.module('circulationSettings', []);
 })(angular);

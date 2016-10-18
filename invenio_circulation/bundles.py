@@ -46,6 +46,9 @@ js = NpmBundle(
     'js/circulation/directives/circulationItemBasket.js',
     'js/circulation/factories/circulationItemStore.js',
     'js/circulation/factories/circulationUserStore.js',
+    'js/circulation/circulationSettings.js',
+    'js/circulation/directives/circulationSettings.js',
+    'js/circulation/factories/circulationSettingsStore.js',
     filters='requirejs',
     output='gen/circulation.%(version)s.js',
     npm={
