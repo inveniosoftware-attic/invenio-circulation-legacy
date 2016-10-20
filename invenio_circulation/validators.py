@@ -115,7 +115,9 @@ class CancelArgument(BaseSchema):
 class ExtensionArgument(BaseSchema):
     """Marshmallow Schema class to validate Item.loan_item arguments."""
 
-    requested_end_date = DateField(default=_max_loan_duration)
+    requested_end_date = DateField(
+        default=lambda: _max_loan_duration().isoformat()
+    )
 
 
 class ArgumentDurationMixin(object):

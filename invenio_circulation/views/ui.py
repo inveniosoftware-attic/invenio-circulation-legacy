@@ -34,3 +34,9 @@ blueprint = Blueprint(
 def index():
     """Circulation index page."""
     return render_template('invenio_circulation/index.html')
+
+
+@blueprint.route('/user/', methods=['GET'])
+def user_hub():
+    """Circulation index page."""
+    return render_template('invenio_circulation/user_hub.html')

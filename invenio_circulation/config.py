@@ -66,3 +66,10 @@ CIRCULATION_ACTION_REQUEST_URL = \
     '/api/hooks/receivers/circulation_request/events/'
 CIRCULATION_ACTION_RETURN_URL = \
     '/api/hooks/receivers/circulation_return/events/'
+CIRCULATION_ACTION_EXTEND_URL = \
+    '/api/hooks/receivers/circulation_extend/events/'
+CIRCULATION_ACTION_LOSE_URL = '/api/hooks/receivers/circulation_lose/events/'
+CIRCULATION_ACTION_CANCEL_URL = \
+    '/api/hooks/receivers/circulation_cancel/events/'
+
+CIRCULATION_USER_HUB_QUERY = '_circulation.holdings.user_id:'

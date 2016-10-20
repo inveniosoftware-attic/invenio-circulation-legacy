@@ -1,0 +1,14 @@
+<h1 translate>Current Loans</h1>
+<div ng-repeat="loan in loans">
+  Item: {{loan.id}}
+  <button ng-click="extend(loan.itemId)" translate>Extend</button>
+  <button ng-click="lose(loan.itemId)" translate>Lose</button>
+</div>
+
+<h1 translate>Current Requests</h1>
+<div ng-repeat="request in requests">
+  Item: {{request.id}}
+  <button ng-click="cancel(request.itemId, request.id)" translate>Cancel</button>
+</div>
+
+<input type="text" ng-model="requestedEndDate"/>

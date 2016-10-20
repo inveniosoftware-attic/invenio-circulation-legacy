@@ -114,7 +114,7 @@ def test_marshmallow_extend_loan(app):
     # Check the default value behavior
     defaults = ExtensionArgument().dump({}).data
     assert defaults['requested_end_date'] == (
-            datetime.date.today() + datetime.timedelta(days=CLP))
+            datetime.date.today() + datetime.timedelta(days=CLP)).isoformat()
 
     # Check date
     arguments = {'requested_end_date': datetime.date.today()}
