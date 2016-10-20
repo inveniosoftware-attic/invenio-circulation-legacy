@@ -31,6 +31,7 @@ CIRCULATION_DATE_FORMAT = '%Y-%m-%d'
 
 CIRCULATION_REST_ENDPOINTS = {
     'crcitm': {
+        'default_endpoint_prefix': True,
         'pid_type': 'crcitm',
         'pid_minter': 'circulation_item',
         'pid_fetcher': 'circulation_item',
@@ -54,10 +55,10 @@ CIRCULATION_REST_ENDPOINTS = {
 }
 """Basic REST circulation configuration."""
 
-CIRCULATION_ITEM_SEARCH_API = '/circulation/items/'
+CIRCULATION_ITEM_SEARCH_API = '/api/circulation/items/'
 """Configure the item search engine endpoint."""
 
-CIRCULATION_USER_SEARCH_API = '/users/'
+CIRCULATION_USER_SEARCH_API = '/api/users/'
 """Configure the user search engine endpoint."""
 
 CIRCULATION_ACTION_LOAN_URL = '/api/hooks/receivers/circulation_loan/events/'

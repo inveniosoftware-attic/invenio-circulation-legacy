@@ -64,4 +64,7 @@ class InvenioCirculationREST(InvenioCirculation):
         app.register_blueprint(rest.create_blueprint(
             app.config['CIRCULATION_REST_ENDPOINTS']
         ))
+        app.config['RECORDS_REST_ENDPOINTS'].update(
+            app.config['CIRCULATION_REST_ENDPOINTS']
+        )
         app.extensions['invenio-circulation-rest'] = self
