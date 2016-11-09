@@ -60,6 +60,9 @@ setup_requires = [
 ]
 
 install_requires = [
+    'celery<4.0,>=3.1',                 # FIXME: invenio-indexer
+    'elasticsearch<3.0.0,>=2.0.0',      # FIXME: invenio-search
+    'elasticsearch-dsl<3.0.0,>=2.0.0',  # FIXME: invenio-search
     'Flask-BabelEx>=0.9.2',
     'Flask>=0.11.1',
     'invenio-assets>=1.0.0b2',
