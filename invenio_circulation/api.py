@@ -24,13 +24,21 @@
 
 """Circulation API."""
 
+import collections
+import datetime
 import uuid
 from functools import partial, wraps
 from operator import indexOf
 
+import six
 from flask import current_app
+from invenio_db import db
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records.api import Record
+from invenio_records.models import RecordMetadata
+from sqlalchemy import BOOLEAN, DATE, INTEGER, cast, func, type_coerce
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy_continuum import version_class
 
 from invenio_circulation.models import ItemStatus
 
@@ -158,6 +166,56 @@ class Item(Record):
         if 'status' not in data:
             data['_circulation']['status'] = ItemStatus.ON_SHELF
         return super(Item, cls).create(data, id_=id_)
+
+    @classmethod
+    def find_by_holding(cls, **kwargs):
+        """Find item versions based on their holdings information.
+
+        Every given kwarg will be queried as a key-value pair in the items
+        holding.
+
+        :returns: List[(UUID, version_id)] with `version_id` as used by
+                  `RecordMetadata.version_id`.
+        """
+        def _get_filter_clause(obj, key, value):
+            val = obj[key].astext
+            CASTS = {
+                bool: lambda x: cast(x, BOOLEAN),
+                int: lambda x: cast(x, INTEGER),
+                datetime.date: lambda x: cast(x, DATE),
+            }
+            if (not isinstance(value, six.string_types) and
+                    isinstance(value, collections.Sequence)):
+                if len(value) == 2:
+                    return CASTS[type(value[0])](val).between(*value)
+                raise ValueError('Too few/many values for a range query. '
+                                 'Range query requires two values.')
+            return CASTS.get(type(value), lambda x: x)(val) == value
+
+        RecordMetadataVersion = version_class(RecordMetadata)
+
+        data = type_coerce(RecordMetadataVersion.json, JSONB)
+        path = ('_circulation', 'holdings')
+
+        subquery = db.session.query(
+            RecordMetadataVersion.id.label('id'),
+            RecordMetadataVersion.version_id.label('version_id'),
+            func.json_array_elements(data[path]).label('obj')
+        ).subquery()
+
+        obj = type_coerce(subquery.c.obj, JSONB)
+
+        query = db.session.query(
+            RecordMetadataVersion.id,
+            RecordMetadataVersion.version_id
+        ).filter(
+            RecordMetadataVersion.id == subquery.c.id,
+            RecordMetadataVersion.version_id == subquery.c.version_id,
+            *(_get_filter_clause(obj, k, v) for k, v in kwargs.items())
+        )
+
+        for result in query:
+            yield result
 
     @check_status(statuses=[ItemStatus.ON_SHELF])
     def loan_item(self, **kwargs):

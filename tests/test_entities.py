@@ -25,10 +25,12 @@
 
 """Module entities tests."""
 
+import datetime
 import pytest
 from invenio_pidstore.errors import PIDInvalidAction
 
 from invenio_circulation.api import Item, ItemStatus, Location
+from invenio_circulation.validators import LoanItemSchema
 
 
 def test_location_create(app, db):
@@ -115,3 +117,87 @@ def test_cancel_hold(app, db):
 
     with pytest.raises(Exception):
         item.cancel_hold(1)
+
+
+@pytest.mark.parametrize(('arguments', 'assertions'), [
+    ({'user_id': 1}, (
+        lambda res, _: len(res) == 1,
+        lambda res, item: res[0][0] == item.id,
+        lambda res, item: res[0][1] == 2
+    )),
+    ({'user_id': 2}, (
+        lambda res, _: len(res) == 1,
+        lambda res, item: res[0][0] == item.id,
+        lambda res, item: res[0][1] == 4
+    )),
+    ({'delivery': 'mail'}, (
+        lambda res, _: len(res) == 2,
+        lambda res, item: res[0][0] == item.id,
+        lambda res, item: res[0][1] == 2,
+        lambda res, item: res[1][1] == 4
+    )),
+    ({'start_date': datetime.date.today()}, (
+        lambda res, _: len(res) == 2,
+        lambda res, item: res[0][0] == item.id,
+        lambda res, item: res[0][1] == 2,
+        lambda res, item: res[1][1] == 4
+    )),
+    ({'end_date': datetime.date.today() + datetime.timedelta(weeks=2)}, (
+        lambda res, _: len(res) == 1,
+        lambda res, item: res[0][0] == item.id,
+        lambda res, item: res[0][1] == 4
+    )),
+    ({'start_date': [datetime.date.today() - datetime.timedelta(weeks=1),
+                     datetime.date.today() + datetime.timedelta(weeks=6)]}, (
+        lambda res, _: len(res) == 2,
+        lambda res, item: res[0][0] == item.id,
+        lambda res, item: res[0][1] == 2,
+        lambda res, item: res[1][1] == 4
+    )),
+    ({'start_date': [datetime.date.today() - datetime.timedelta(weeks=4),
+                     datetime.date.today() - datetime.timedelta(weeks=2)]}, (
+        lambda res, _: len(res) == 0,
+    )),
+])
+def test_item_find_by_holding(app, db, arguments, assertions):
+    # Prepare the item
+    item = Item.create({})
+    db.session.commit()
+
+    # Create loan data
+    la = LoanItemSchema()
+    la.context['item'] = item
+
+    # Prepare the loan data
+    data = []
+    tmp = la.load({'user_id': 1}).data
+    data.append(la.dump(tmp).data)
+
+    end_date = datetime.date.today() + datetime.timedelta(weeks=2)
+    tmp = la.load({'user_id': 2, 'end_date': end_date}).data
+    data.append(la.dump(tmp).data)
+
+    for d in data:
+        # Loan item
+        item.loan_item(**d)
+        item.commit()
+        db.session.commit()
+
+        # Return item
+        item.return_item()
+        item.commit()
+        db.session.commit()
+
+    res = list(Item.find_by_holding(**arguments))
+    for assertion in assertions:
+        assert assertion(res, item)
+
+
+def test_item_find_by_holding_value_error(app, db):
+    # Raises for less than two values
+    with pytest.raises(ValueError):
+        list(Item.find_by_holding(start_date=[1]))
+
+    # Raises for three or more values
+    with pytest.raises(ValueError):
+        list(Item.find_by_holding(start_date=[1, 2, 3]))

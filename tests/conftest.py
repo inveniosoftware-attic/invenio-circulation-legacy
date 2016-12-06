@@ -74,6 +74,9 @@ def app(request):
 
     app_ = Flask(__name__, instance_path=instance_path)
     app_.config.update(
+        SQLALCHEMY_DATABASE_URI=os.getenv(
+            'SQLALCHEMY_DATABASE_URI',
+            'postgresql+psycopg2://localhost/circulation_test'),
         OAUTH2SERVER_CLIENT_ID_SALT_LEN=40,
         OAUTH2SERVER_CLIENT_SECRET_SALT_LEN=60,
         OAUTH2SERVER_TOKEN_PERSONAL_SALT_LEN=60,
