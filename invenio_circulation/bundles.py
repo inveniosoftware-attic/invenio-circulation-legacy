@@ -30,7 +30,7 @@ from invenio_assets import NpmBundle
 css = Bundle(
     'node_modules/angular-ui-bootstrap/dist/ui-bootstrap-csp.css',
     'css/circulation/app.css',
-    filters='cleancss',
+    filters='cleancssurl',
     output='gen/circulation.%(version)s.css',
 )
 
