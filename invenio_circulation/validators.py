@@ -56,7 +56,7 @@ def _get_current_user_id():
 
 
 def validate(schema, kwargs):
-    """Helper function to validate the given arguments against the schema."""
+    """Validate the given arguments against the schema."""
     errors = schema.validate(kwargs)
     if errors:
         raise ValidationError(errors)

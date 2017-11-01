@@ -26,6 +26,7 @@
 """Module entities tests."""
 
 import datetime
+
 import pytest
 from invenio_pidstore.errors import PIDInvalidAction
 
